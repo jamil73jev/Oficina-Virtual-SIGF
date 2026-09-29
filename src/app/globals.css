@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
+/* Tokens de diseño. Pares texto/fondo verificados >= 4.5:1 (WCAG 2.2 AA). */
 :root {
+  color-scheme: light;
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+  --surface: #f3f4f6;
+  --surface-raised: #ffffff;
+  --muted: #4b5563;
+  --border: #6b7280;
+  --border-subtle: #d1d5db;
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
+  --primary-hover: #1e40af;
+  --danger: #b91c1c;
+  --success: #166534;
+  --success-soft: #dcfce7;
+  --warning-soft: #fef3c7;
+  --warning: #92400e;
+  --focus: #1d4ed8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #0b1120;
+    --foreground: #f1f5f9;
+    --surface: #111a2e;
+    --surface-raised: #16213a;
+    --muted: #b6c0d0;
+    --border: #8493ad;
+    --border-subtle: #2b3a57;
+    --primary: #93c5fd;
+    --primary-foreground: #0b1120;
+    --primary-hover: #bfdbfe;
+    --danger: #fca5a5;
+    --success: #86efac;
+    --success-soft: #14532d;
+    --warning-soft: #422006;
+    --warning: #fcd34d;
+    --focus: #93c5fd;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-raised: var(--surface-raised);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-subtle: var(--border-subtle);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

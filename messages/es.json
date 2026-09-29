@@ -1,0 +1,165 @@
+{
+  "app": { "name": "Oficina Virtual", "description": "Panel para coordinar proyectos, agentes, aprobaciones y costos.", "skipToContent": "Saltar al contenido" },
+  "nav": {
+    "label": "Navegación principal",
+    "home": "Inicio",
+    "projects": "Proyectos",
+    "documents": "Documentos",
+    "finance": "Finanzas",
+    "agents": "Agentes",
+    "approvals": "Aprobaciones",
+    "costs": "Costos"
+  },
+  "header": {
+    "language": "Idioma",
+    "timezone": "Huso horario",
+    "now": "Ahora"
+  },
+  "locales": { "es": "Español", "en": "English" },
+  "home": {
+    "title": "Tu oficina",
+    "subtitle": "Fija objetivos, aprueba y supervisa a tus agentes de IA.",
+    "projectsTitle": "Proyectos",
+    "emptyTitle": "Aún no hay proyectos",
+    "emptyBody": "Cuando crees un proyecto aparecerá aquí con su estado y presupuesto.",
+    "newProject": "Nuevo proyecto",
+    "budgetLabel": "Presupuesto de ejemplo",
+    "statusLabel": "Estado",
+    "statusIdle": "Sin actividad"
+  },
+  "dialog": {
+    "close": "Cerrar",
+    "newProjectTitle": "Nuevo proyecto",
+    "newProjectDescription": "Describe el objetivo que deben cumplir los agentes.",
+    "objective": "Objetivo",
+    "objectivePlaceholder": "Ej.: Preparar el informe trimestral",
+    "objectiveHint": "Sé específico; los agentes usarán esto como criterio.",
+    "cancel": "Cancelar",
+    "create": "Crear"
+  },
+  "approvals": {
+    "title": "Aprobaciones",
+    "subtitle": "Revisa y decide las acciones que tus agentes no pueden ejecutar solos. Si expiran, se rechazan.",
+    "listTitle": "Pendientes de decisión",
+    "refresh": "Actualizar",
+    "loading": "Cargando aprobaciones…",
+    "emptyTitle": "No hay aprobaciones pendientes",
+    "emptyBody": "Cuando un agente solicite permiso para una acción de riesgo, aparecerá aquí.",
+    "riskLabel": "Riesgo",
+    "risk": {
+      "lectura": "Lectura",
+      "escritura_reversible": "Escritura reversible",
+      "irreversible": "Irreversible"
+    },
+    "remainingLabel": "Tiempo restante",
+    "payloadLabel": "Datos de la acción",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "confirm": {
+      "approveTitle": "¿Aprobar esta acción?",
+      "rejectTitle": "¿Rechazar esta acción?",
+      "approveBody": "Se aprobará «{tipo}» (riesgo: {riesgo}). La decisión queda registrada en la auditoría y no se puede cambiar.",
+      "rejectBody": "Se rechazará «{tipo}» (riesgo: {riesgo}). La decisión queda registrada en la auditoría y no se puede cambiar.",
+      "cancel": "Cancelar",
+      "close": "Cerrar"
+    },
+    "done": {
+      "aprobada": "Aprobación registrada.",
+      "rechazada": "Rechazo registrado."
+    },
+    "errors": {
+      "no_autenticado": "No has iniciado sesión.",
+      "rol_insuficiente": "Tu rol no permite realizar esta acción.",
+      "ya_decidida": "Esta aprobación ya fue decidida.",
+      "expirada": "Esta aprobación expiró y quedó rechazada.",
+      "no_encontrada": "No se encontró la aprobación.",
+      "generico": "No se pudo completar la operación. Inténtalo de nuevo."
+    }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "pageTitle": "Oficina departamental de Thunder S.A",
+    "subtitle": "Define objetivos y coordina las tareas de tus agentes en un tablero.",
+    "listTitle": "Proyectos",
+    "refresh": "Actualizar",
+    "loading": "Cargando proyectos…",
+    "emptyTitle": "Aún no hay proyectos",
+    "emptyBody": "Crea un proyecto con su objetivo para empezar a planificar tareas.",
+    "selectLabel": "Proyecto",
+    "select": "Ver tablero",
+    "boardTitle": "Tablero: {objetivo}",
+    "newProject": {
+      "title": "Nuevo proyecto",
+      "objective": "Objetivo",
+      "hint": "Describe el resultado que deben lograr los agentes.",
+      "submit": "Crear proyecto"
+    },
+    "newTask": {
+      "title": "Nueva tarea",
+      "criteria": "Criterios de verificación",
+      "hint": "Uno por línea. Cada criterio debe poder comprobarse.",
+      "deps": "Depende de",
+      "submit": "Crear tarea"
+    },
+    "board": {
+      "label": "Tablero de tareas",
+      "emptyColumn": "Sin tareas",
+      "tasksCount": "{count, plural, one {# tarea} other {# tareas}}",
+      "noTasks": "Este proyecto aún no tiene tareas."
+    },
+    "states": {
+      "pendiente": "Pendiente",
+      "asignada": "Asignada",
+      "en_curso": "En curso",
+      "en_verificacion": "En verificación",
+      "completada": "Completada",
+      "fallida": "Fallida",
+      "bloqueada": "Bloqueada"
+    },
+    "task": {
+      "criteria": "Criterios",
+      "agent": "Agente",
+      "noAgent": "Sin asignar",
+      "deps": "Dependencias",
+      "noDeps": "Sin dependencias",
+      "edit": "Gestionar",
+      "id": "Tarea {id}"
+    },
+    "edit": {
+      "title": "Gestionar tarea {id}",
+      "state": "Mover a",
+      "keepState": "Estado actual: {estado}",
+      "agent": "Identificador del agente",
+      "agentHint": "Déjalo vacío y guarda para desasignar.",
+      "assign": "Guardar agente",
+      "move": "Mover tarea",
+      "addDep": "Añadir dependencia",
+      "addDepButton": "Añadir",
+      "removeDep": "Quitar dependencia {id}",
+      "currentDeps": "Dependencias actuales",
+      "noCandidates": "No hay otras tareas para depender.",
+      "close": "Cerrar",
+      "noWrite": "Tu rol solo permite consultar."
+    },
+    "done": {
+      "proyecto": "Proyecto creado.",
+      "tarea": "Tarea creada.",
+      "mover": "Tarea movida.",
+      "asignar": "Agente actualizado.",
+      "dependencia": "Dependencias actualizadas."
+    },
+    "errors": {
+      "no_autenticado": "No has iniciado sesión.",
+      "rol_insuficiente": "Tu rol no permite realizar esta acción.",
+      "no_encontrado": "No se encontró el elemento.",
+      "solicitud_invalida": "Los datos enviados no son válidos.",
+      "cuerpo_invalido": "Los datos enviados no son válidos.",
+      "ciclo_dependencias": "Esa dependencia crearía un ciclo entre tareas.",
+      "transicion_invalida": "Ese cambio de estado no está permitido.",
+      "dependencias_incompletas": "Las dependencias de la tarea aún no están completadas.",
+      "sin_agente": "La tarea necesita un agente asignado para ese estado.",
+      "proyecto_cerrado": "El proyecto está cerrado y no admite cambios.",
+      "generico": "No se pudo completar la operación. Inténtalo de nuevo."
+    }
+  }
+}

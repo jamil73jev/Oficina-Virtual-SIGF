@@ -1,0 +1,165 @@
+{
+  "app": { "name": "Virtual Office", "description": "Dashboard to coordinate projects, agents, approvals and costs.", "skipToContent": "Skip to content" },
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "projects": "Projects",
+    "documents": "Documents",
+    "finance": "Finance",
+    "agents": "Agents",
+    "approvals": "Approvals",
+    "costs": "Costs"
+  },
+  "header": {
+    "language": "Language",
+    "timezone": "Time zone",
+    "now": "Now"
+  },
+  "locales": { "es": "Español", "en": "English" },
+  "home": {
+    "title": "Your office",
+    "subtitle": "Set goals, approve and supervise your AI agents.",
+    "projectsTitle": "Projects",
+    "emptyTitle": "No projects yet",
+    "emptyBody": "When you create a project it will appear here with its status and budget.",
+    "newProject": "New project",
+    "budgetLabel": "Sample budget",
+    "statusLabel": "Status",
+    "statusIdle": "Idle"
+  },
+  "dialog": {
+    "close": "Close",
+    "newProjectTitle": "New project",
+    "newProjectDescription": "Describe the goal the agents must accomplish.",
+    "objective": "Objective",
+    "objectivePlaceholder": "E.g.: Prepare the quarterly report",
+    "objectiveHint": "Be specific; agents will use this as their criterion.",
+    "cancel": "Cancel",
+    "create": "Create"
+  },
+  "approvals": {
+    "title": "Approvals",
+    "subtitle": "Review and decide the actions your agents cannot run on their own. Expired requests are rejected.",
+    "listTitle": "Awaiting decision",
+    "refresh": "Refresh",
+    "loading": "Loading approvals…",
+    "emptyTitle": "No pending approvals",
+    "emptyBody": "When an agent requests permission for a risky action, it will appear here.",
+    "riskLabel": "Risk",
+    "risk": {
+      "lectura": "Read",
+      "escritura_reversible": "Reversible write",
+      "irreversible": "Irreversible"
+    },
+    "remainingLabel": "Time remaining",
+    "payloadLabel": "Action data",
+    "approve": "Approve",
+    "reject": "Reject",
+    "confirm": {
+      "approveTitle": "Approve this action?",
+      "rejectTitle": "Reject this action?",
+      "approveBody": "“{tipo}” (risk: {riesgo}) will be approved. The decision is recorded in the audit log and cannot be changed.",
+      "rejectBody": "“{tipo}” (risk: {riesgo}) will be rejected. The decision is recorded in the audit log and cannot be changed.",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "done": {
+      "aprobada": "Approval recorded.",
+      "rechazada": "Rejection recorded."
+    },
+    "errors": {
+      "no_autenticado": "You are not signed in.",
+      "rol_insuficiente": "Your role does not allow this action.",
+      "ya_decidida": "This approval has already been decided.",
+      "expirada": "This approval expired and was rejected.",
+      "no_encontrada": "Approval not found.",
+      "generico": "The operation could not be completed. Please try again."
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "pageTitle": "Oficina departamental de Thunder S.A",
+    "subtitle": "Set goals and coordinate your agents' tasks on a board.",
+    "listTitle": "Projects",
+    "refresh": "Refresh",
+    "loading": "Loading projects…",
+    "emptyTitle": "No projects yet",
+    "emptyBody": "Create a project with its goal to start planning tasks.",
+    "selectLabel": "Project",
+    "select": "View board",
+    "boardTitle": "Board: {objetivo}",
+    "newProject": {
+      "title": "New project",
+      "objective": "Goal",
+      "hint": "Describe the outcome the agents must achieve.",
+      "submit": "Create project"
+    },
+    "newTask": {
+      "title": "New task",
+      "criteria": "Verification criteria",
+      "hint": "One per line. Each criterion must be checkable.",
+      "deps": "Depends on",
+      "submit": "Create task"
+    },
+    "board": {
+      "label": "Task board",
+      "emptyColumn": "No tasks",
+      "tasksCount": "{count, plural, one {# task} other {# tasks}}",
+      "noTasks": "This project has no tasks yet."
+    },
+    "states": {
+      "pendiente": "Pending",
+      "asignada": "Assigned",
+      "en_curso": "In progress",
+      "en_verificacion": "In verification",
+      "completada": "Completed",
+      "fallida": "Failed",
+      "bloqueada": "Blocked"
+    },
+    "task": {
+      "criteria": "Criteria",
+      "agent": "Agent",
+      "noAgent": "Unassigned",
+      "deps": "Dependencies",
+      "noDeps": "No dependencies",
+      "edit": "Manage",
+      "id": "Task {id}"
+    },
+    "edit": {
+      "title": "Manage task {id}",
+      "state": "Move to",
+      "keepState": "Current state: {estado}",
+      "agent": "Agent identifier",
+      "agentHint": "Leave empty and save to unassign.",
+      "assign": "Save agent",
+      "move": "Move task",
+      "addDep": "Add dependency",
+      "addDepButton": "Add",
+      "removeDep": "Remove dependency {id}",
+      "currentDeps": "Current dependencies",
+      "noCandidates": "There are no other tasks to depend on.",
+      "close": "Close",
+      "noWrite": "Your role is read-only."
+    },
+    "done": {
+      "proyecto": "Project created.",
+      "tarea": "Task created.",
+      "mover": "Task moved.",
+      "asignar": "Agent updated.",
+      "dependencia": "Dependencies updated."
+    },
+    "errors": {
+      "no_autenticado": "You are not signed in.",
+      "rol_insuficiente": "Your role does not allow this action.",
+      "no_encontrado": "Item not found.",
+      "solicitud_invalida": "The submitted data is not valid.",
+      "cuerpo_invalido": "The submitted data is not valid.",
+      "ciclo_dependencias": "That dependency would create a cycle between tasks.",
+      "transicion_invalida": "That state change is not allowed.",
+      "dependencias_incompletas": "The task's dependencies are not completed yet.",
+      "sin_agente": "The task needs an assigned agent for that state.",
+      "proyecto_cerrado": "The project is closed and cannot be changed.",
+      "generico": "The operation could not be completed. Please try again."
+    }
+  }
+}

@@ -6,21 +6,37 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "audit:a11y": "node scripts/audit-a11y.mjs",
+    "audit:perf": "node scripts/audit-perf.mjs",
+    "db:generate": "drizzle-kit generate --dialect postgresql --schema ./src/core/db/schema.ts --out ./src/core/db/migrations"
   },
   "dependencies": {
+    "ai": "^7.0.122",
+    "drizzle-orm": "^0.45.3",
     "next": "16.3.6",
+    "next-intl": "^4.14.7",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "chrome-launcher": "^1.2.1",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
+    "lighthouse": "^13.5.0",
+    "playwright-core": "^1.63.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
