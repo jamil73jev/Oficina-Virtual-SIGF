@@ -51,6 +51,8 @@ export interface OpcionesModeloOllama {
   timeoutMs?: number;
   fetch?: FetchOllama;
   semilla?: number;
+  /** Máximo de tokens generados por respuesta. */
+  numPredict?: number;
 }
 
 const HOSTS_LOCALES = new Set(["localhost", "127.0.0.1", "[::1]"]);
@@ -101,6 +103,7 @@ export class ModeloOllama implements ModeloLenguaje {
   private readonly timeoutMs: number;
   private readonly fetchImpl: FetchOllama;
   private readonly semilla: number;
+  private readonly numPredict: number;
 
   constructor(readonly nombreModelo: string, opciones: OpcionesModeloOllama = {}) {
     if (!nombreModelo.trim()) throw new OllamaConfiguracionError("ollama:");
@@ -109,6 +112,7 @@ export class ModeloOllama implements ModeloLenguaje {
     this.timeoutMs = opciones.timeoutMs ?? 180_000;
     this.fetchImpl = opciones.fetch ?? fetch;
     this.semilla = opciones.semilla ?? 42;
+    this.numPredict = opciones.numPredict ?? 220;
   }
 
   async generarTexto(p: PeticionTexto): Promise<PasoModelo> {
@@ -180,7 +184,7 @@ export class ModeloOllama implements ModeloLenguaje {
       body: JSON.stringify({
         model: this.nombreModelo,
         stream: false,
-        options: { temperature: 0, seed: this.semilla },
+        options: { temperature: 0, seed: this.semilla, num_predict: this.numPredict },
         ...extra,
       }),
     }, this.timeoutMs);

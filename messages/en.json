@@ -8,7 +8,12 @@
     "finance": "Finance",
     "agents": "Agents",
     "approvals": "Approvals",
-    "costs": "Costs"
+    "costs": "Costs",
+    "operations": "Operations room",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "groups": { "work": "Work", "analysis": "Analysis", "team": "Team" },
+    "theme": { "label": "Color theme", "light": "Light", "dark": "Dark", "system": "System" }
   },
   "header": {
     "language": "Language",
@@ -16,6 +21,47 @@
     "now": "Now"
   },
   "locales": { "es": "Español", "en": "English" },
+  "portada": {
+    "title": "My office today",
+    "summary": "Today at a glance",
+    "error": "This section could not be loaded. Reload the page; if it persists, check the data service.",
+    "approvals": {
+      "title": "Pending approvals",
+      "waiting": "{count, plural, one {# action awaits your decision} other {# actions await your decision}}",
+      "none": "Nothing to decide right now.",
+      "review": "Review approvals"
+    },
+    "costs": {
+      "title": "Token cost this period",
+      "tokens": "{tokens} tokens used",
+      "budget": "{pct}% of the organization cap.",
+      "period": "Period {periodo}."
+    },
+    "operations": {
+      "title": "Recent operations",
+      "open": "Open the operations room",
+      "caption": "Tasks by status",
+      "state": "Status",
+      "tasks": "Tasks",
+      "emptyTitle": "No operations yet",
+      "emptyBody": "Assign a task to one of your agents and you will see its progress here.",
+      "emptyAction": "Assign a task"
+    },
+    "states": {
+      "pendiente": "Pending",
+      "asignada": "Assigned",
+      "en_curso": "In progress",
+      "en_verificacion": "In verification",
+      "completada": "Completed",
+      "fallida": "Failed",
+      "bloqueada": "Blocked"
+    },
+    "agents": {
+      "title": "Agent quick access",
+      "subtitle": "{count} agents, one per area of the Finance Department.",
+      "ask": "Ask a question"
+    }
+  },
   "home": {
     "title": "Your office",
     "subtitle": "Set goals, approve and supervise your AI agents.",

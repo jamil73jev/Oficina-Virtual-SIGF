@@ -1,45 +1,130 @@
 @import "tailwindcss";
 
-/* Tokens de diseño. Pares texto/fondo verificados >= 4.5:1 (WCAG 2.2 AA). */
+/*
+ * Identidad visual "Malecón": niebla de río (fondos verdosos muy claros), tinta verde-pizarra
+ * para el texto, un verde-azulado profundo como acento y latón solo para advertencias.
+ * Sobrio, sin azul de plantilla; pensado para jornadas largas (contraste alto pero sin blanco puro
+ * sobre negro puro). Todos los pares texto/fondo verificados >= 4.5:1 y los bordes de controles
+ * >= 3:1 (WCAG 2.2 AA). Ver tests/unit/ui-contraste.test.ts.
+ *
+ * Tema: atributo data-theme="light" | "dark" en <html> (lo fija un script previo al primer
+ * pintado). Sin atributo (JS desactivado) se respeta prefers-color-scheme.
+ * Los nombres de tokens antiguos se conservan: otros módulos los usan.
+ */
 :root {
   color-scheme: light;
-  --background: #ffffff;
-  --foreground: #111827;
-  --surface: #f3f4f6;
+
+  /* Titulos: serif del sistema, sin descarga (protege el LCP) */
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+
+  /* Superficies y texto */
+  --background: #f2f5f3;
+  --foreground: #14201f;
+  --surface: #e8eeeb;
   --surface-raised: #ffffff;
-  --muted: #4b5563;
-  --border: #6b7280;
-  --border-subtle: #d1d5db;
-  --primary: #1d4ed8;
+  --muted: #465755;
+  --border: #667a77;
+  --border-subtle: #ccd8d4;
+
+  /* Acento */
+  --primary: #0b5d5a;
   --primary-foreground: #ffffff;
-  --primary-hover: #1e40af;
-  --danger: #b91c1c;
-  --success: #166534;
-  --success-soft: #dcfce7;
-  --warning-soft: #fef3c7;
-  --warning: #92400e;
-  --focus: #1d4ed8;
+  --primary-hover: #08484a;
+  --primary-soft: #d9ece9;
+  --focus: #0b5d5a;
+
+  /* Semántica */
+  --danger: #b42318;
+  --danger-soft: #fbe3e0;
+  --success: #17693a;
+  --success-soft: #ddf3e4;
+  --warning: #8a4b0b;
+  --warning-soft: #fbebcb;
+  --info: #1d5a8e;
+  --info-soft: #dceaf6;
+
+  /* Nuevos alias semánticos */
+  --text: var(--foreground);
+  --text-soft: var(--muted);
+  --accent: var(--primary);
+  --sidebar: #e3ebe8;
+  --overlay: rgb(10 20 19 / 0.55);
+
+  /* Escala de espaciado (rem) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* Radios */
+  --radius-1: 0.25rem;
+  --radius-2: 0.375rem;
+  --radius-3: 0.625rem;
+
+  /* Sombras suaves, teñidas de la tinta */
+  --shadow-1: 0 1px 2px rgb(20 32 31 / 0.06), 0 1px 1px rgb(20 32 31 / 0.04);
+  --shadow-2: 0 4px 14px rgb(20 32 31 / 0.09), 0 1px 3px rgb(20 32 31 / 0.06);
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0e1514;
+  --foreground: #e6eeec;
+  --surface: #141d1c;
+  --surface-raised: #1a2524;
+  --muted: #a6b7b4;
+  --border: #7a908c;
+  --border-subtle: #2a3937;
+  --primary: #62c7be;
+  --primary-foreground: #06201f;
+  --primary-hover: #8bdad3;
+  --primary-soft: #143533;
+  --focus: #8bdad3;
+  --danger: #ff9a8f;
+  --danger-soft: #3d1a17;
+  --success: #7fd79b;
+  --success-soft: #12331e;
+  --warning: #f0b45a;
+  --warning-soft: #3a2a0c;
+  --info: #8dbceb;
+  --info-soft: #12283f;
+  --sidebar: #101918;
+  --overlay: rgb(0 0 0 / 0.65);
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 6px 18px rgb(0 0 0 / 0.45), 0 1px 3px rgb(0 0 0 / 0.4);
+}
+
+/* Sin JS: seguir al sistema. Duplica el bloque oscuro (CSS no permite compartirlo). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     color-scheme: dark;
-    --background: #0b1120;
-    --foreground: #f1f5f9;
-    --surface: #111a2e;
-    --surface-raised: #16213a;
-    --muted: #b6c0d0;
-    --border: #8493ad;
-    --border-subtle: #2b3a57;
-    --primary: #93c5fd;
-    --primary-foreground: #0b1120;
-    --primary-hover: #bfdbfe;
-    --danger: #fca5a5;
-    --success: #86efac;
-    --success-soft: #14532d;
-    --warning-soft: #422006;
-    --warning: #fcd34d;
-    --focus: #93c5fd;
+    --background: #0e1514;
+    --foreground: #e6eeec;
+    --surface: #141d1c;
+    --surface-raised: #1a2524;
+    --muted: #a6b7b4;
+    --border: #7a908c;
+    --border-subtle: #2a3937;
+    --primary: #62c7be;
+    --primary-foreground: #06201f;
+    --primary-hover: #8bdad3;
+    --primary-soft: #143533;
+    --focus: #8bdad3;
+    --danger: #ff9a8f;
+    --danger-soft: #3d1a17;
+    --success: #7fd79b;
+    --success-soft: #12331e;
+    --warning: #f0b45a;
+    --warning-soft: #3a2a0c;
+    --info: #8dbceb;
+    --info-soft: #12283f;
+    --sidebar: #101918;
+    --overlay: rgb(0 0 0 / 0.65);
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-2: 0 6px 18px rgb(0 0 0 / 0.45), 0 1px 3px rgb(0 0 0 / 0.4);
   }
 }
 
@@ -54,19 +139,57 @@
   --color-primary: var(--primary);
   --color-primary-fg: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-sidebar: var(--sidebar);
+  --color-overlay: var(--overlay);
+  --font-sans: var(--font-ui), system-ui, sans-serif;
+  --font-display: var(--font-serif), Georgia, serif;
+  --font-mono: var(--font-code), ui-monospace, monospace;
+  --radius-sm: var(--radius-1);
+  --radius-md: var(--radius-2);
+  --radius-lg: var(--radius-3);
+  --shadow-xs: var(--shadow-1);
+  --shadow-sm: var(--shadow-1);
+  --shadow-md: var(--shadow-2);
 }
 
+/* Escala tipográfica: 13 / 14 / 16 / 20 / 26 / 34 px. Títulos con serif; UI y cifras con sans. */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+  text-rendering: optimizeLegibility;
+}
+
+h1 {
+  font-family: var(--font-serif), Georgia, serif;
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+::selection {
+  background: var(--primary-soft);
+  color: var(--foreground);
+}
+
+/* Cifras: alineadas en columnas y sin saltos al cambiar. */
+.tabular,
+td,
+th,
+output {
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 :focus-visible {
@@ -74,9 +197,25 @@ body {
   outline-offset: 2px;
 }
 
+/* Esqueletos de carga */
+@keyframes ov-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.ov-skeleton {
+  background: var(--border-subtle);
+  animation: ov-pulse 1.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

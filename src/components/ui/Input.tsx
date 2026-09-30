@@ -23,7 +23,7 @@ export function Input({ label, hint, error, id, className, ...props }: InputProp
         aria-invalid={error ? true : undefined}
         aria-describedby={[hintId, errorId].filter(Boolean).join(" ") || undefined}
         className={cn(
-          "min-h-11 rounded-md border border-border bg-raised px-3 text-sm text-foreground placeholder:text-muted",
+          "min-h-11 rounded-md border border-border bg-raised px-3 text-sm text-foreground shadow-xs placeholder:text-muted hover:border-foreground disabled:opacity-60",
           error && "border-danger",
           className,
         )}

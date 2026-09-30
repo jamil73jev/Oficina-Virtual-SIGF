@@ -258,7 +258,8 @@ describe("agentes nuevos: seguridad", () => {
       },
     });
     const r = await env.consultar(agente);
-    expect(r.estado).toBe("completado");
+    // Ninguna herramienta devolvio datos: el resultado no se da por completado.
+    expect(r.estado).toBe("sin_datos");
     expect(fuente.cargas).toBe(0);
 
     const log = await env.auditor.listar(ORG);
@@ -295,7 +296,9 @@ describe("agentes nuevos: seguridad", () => {
       guion: guionConsulta([{ nombre: "balance_comprobacion", args: {}, cifras: ["totalDebe"] }]),
     });
     const r = await env.consultar("contador");
-    if (r.estado !== "completado") throw new Error(r.estado);
+    // La unica herramienta informo el modulo como faltante: sin datos, con mensaje claro.
+    if (r.estado !== "sin_datos") throw new Error(r.estado);
+    expect(r.mensaje).toContain("balance_comprobacion: modulo_no_disponible");
     expect(r.respuesta).toContain("- balance_comprobacion: error modulo_no_disponible");
     const consulta = (await env.auditor.listar(ORG)).find((e) => e.accion === "agente_area.consulta");
     expect(consulta?.despues).toMatchObject({ modoDatos: "real" });

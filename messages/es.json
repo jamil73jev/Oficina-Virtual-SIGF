@@ -8,7 +8,12 @@
     "finance": "Finanzas",
     "agents": "Agentes",
     "approvals": "Aprobaciones",
-    "costs": "Costos"
+    "costs": "Costos",
+    "operations": "Sala de operaciones",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "groups": { "work": "Trabajo", "analysis": "Análisis", "team": "Equipo" },
+    "theme": { "label": "Tema de color", "light": "Claro", "dark": "Oscuro", "system": "Sistema" }
   },
   "header": {
     "language": "Idioma",
@@ -16,6 +21,47 @@
     "now": "Ahora"
   },
   "locales": { "es": "Español", "en": "English" },
+  "portada": {
+    "title": "Mi oficina hoy",
+    "summary": "Resumen del día",
+    "error": "No se pudo cargar esta sección. Recarga la página; si sigue igual, revisa el servicio de datos.",
+    "approvals": {
+      "title": "Aprobaciones pendientes",
+      "waiting": "{count, plural, one {# acción espera tu decisión} other {# acciones esperan tu decisión}}",
+      "none": "Nada por decidir por ahora.",
+      "review": "Revisar aprobaciones"
+    },
+    "costs": {
+      "title": "Costo de tokens del periodo",
+      "tokens": "{tokens} tokens consumidos",
+      "budget": "{pct} % del tope de la organización.",
+      "period": "Periodo {periodo}."
+    },
+    "operations": {
+      "title": "Operaciones recientes",
+      "open": "Abrir la sala de operaciones",
+      "caption": "Tareas por estado",
+      "state": "Estado",
+      "tasks": "Tareas",
+      "emptyTitle": "Aún no hay operaciones",
+      "emptyBody": "Encarga una tarea a uno de tus agentes y aquí verás su avance.",
+      "emptyAction": "Encargar una tarea"
+    },
+    "states": {
+      "pendiente": "Pendientes",
+      "asignada": "Asignadas",
+      "en_curso": "En curso",
+      "en_verificacion": "En verificación",
+      "completada": "Completadas",
+      "fallida": "Fallidas",
+      "bloqueada": "Bloqueadas"
+    },
+    "agents": {
+      "title": "Acceso rápido a los agentes",
+      "subtitle": "{count} agentes, uno por área de la Dirección Financiera.",
+      "ask": "Hacer una consulta"
+    }
+  },
   "home": {
     "title": "Tu oficina",
     "subtitle": "Fija objetivos, aprueba y supervisa a tus agentes de IA.",

@@ -67,6 +67,18 @@ describe("ModeloOllama", () => {
     });
   });
 
+  it("limita la generación a 220 tokens por defecto y permite configurarlo", async () => {
+    const cuerpos: Record<string, unknown>[] = [];
+    const fetch = async (_url: string | URL | Request, init?: RequestInit) => {
+      cuerpos.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+      return respuesta({ message: { content: "ok" }, prompt_eval_count: 1, eval_count: 1 });
+    };
+    await new ModeloOllama("qwen", { fetch }).generarTexto({ sistema: "s", mensajes: [], herramientas: [] });
+    await new ModeloOllama("qwen", { fetch, numPredict: 96 }).generarTexto({ sistema: "s", mensajes: [], herramientas: [] });
+    expect(cuerpos[0]?.options).toMatchObject({ num_predict: 220 });
+    expect(cuerpos[1]?.options).toMatchObject({ num_predict: 96 });
+  });
+
   it("generarObjeto reintenta una vez, usa format y valida con Zod", async () => {
     const cuerpos: Record<string, unknown>[] = [];
     const cola = [

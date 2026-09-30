@@ -19,11 +19,21 @@ export interface TablaHerramienta {
   ruta: string;
   columnas: Array<{ clave: string; etiqueta: string }>;
   filas: FilaTabla[];
+  /** Cantidad exacta antes del recorte visual. */
+  filasTotales: number;
+  /** Filas completas para exportación; el servicio no las publica en eventos. */
+  filasCompletas?: FilaTabla[];
+  avisoFilas?: string;
+  avisoTablas?: string;
+  tablasOmitidas?: string[];
   fuente: string;
   formula: string;
   filtros: string[];
   corte: unknown;
 }
+
+export const MAX_FILAS_TABLA = 200;
+export const MAX_TABLAS_HERRAMIENTA = 8;
 
 interface SalidaRenderizable {
   herramienta?: unknown;
@@ -83,7 +93,18 @@ function formatear(valor: unknown, clave: string, idioma: IdiomaTabla): string {
   if (typeof valor === "boolean") return valor ? (idioma === "es" ? "Sí" : "Yes") : (idioma === "es" ? "No" : "No");
   if (valor === null || valor === undefined) return idioma === "es" ? "No disponible" : "Not available";
   if (valor instanceof Date) return valor.toISOString();
-  if (typeof valor === "object") return JSON.stringify(valor);
+  if (Array.isArray(valor)) {
+    const cortos = valor.length <= 3 && valor.every((item) => !esObjeto(item) && !Array.isArray(item));
+    return cortos && valor.length > 0
+      ? `${formatNumber(valor.length, idioma)}: ${valor.map((item) => formatear(item, clave, idioma)).join("; ")}`
+      : formatNumber(valor.length, idioma);
+  }
+  if (esObjeto(valor)) {
+    const entradas = Object.entries(valor);
+    return entradas.length <= 3 && entradas.every(([, item]) => !esObjeto(item) && !Array.isArray(item))
+      ? entradas.map(([campo, item]) => `${etiquetaCampo(campo, idioma)}: ${formatear(item, `${clave}.${campo}`, idioma)}`).join("; ")
+      : formatNumber(entradas.length, idioma);
+  }
   return String(valor);
 }
 
@@ -91,22 +112,32 @@ function tablaDeFilas(
   filasCrudas: readonly Record<string, unknown>[],
   ruta: string,
   idioma: IdiomaTabla,
-  metadatos: Omit<TablaHerramienta, "titulo" | "ruta" | "columnas" | "filas">,
+  metadatos: Pick<TablaHerramienta, "fuente" | "formula" | "filtros" | "corte">,
   clavesDeFormato?: readonly string[],
 ): TablaHerramienta {
   const encontradas = [...new Set(filasCrudas.flatMap((fila) => Object.keys(fila)))];
   const claves = encontradas.length > 0 ? encontradas : ["valor"];
+  const filasCompletas = filasCrudas.map((fila, indice) => ({
+    celdas: claves.map((clave) => ({
+      columna: clave,
+      texto: formatear(fila[clave], `${ruta}.${clave === "valor" ? (clavesDeFormato?.[indice] ?? clave) : clave}`, idioma),
+      valorExacto: fila[clave],
+    })),
+  }));
+  const filasTotales = filasCompletas.length;
+  const filas = filasCompletas.slice(0, MAX_FILAS_TABLA);
   return {
     titulo: ruta.split(".").map((parte) => etiquetaCampo(parte, idioma)).join(" — "),
     ruta,
     columnas: claves.map((clave) => ({ clave, etiqueta: etiquetaCampo(clave, idioma) })),
-    filas: filasCrudas.map((fila, indice) => ({
-      celdas: claves.map((clave) => ({
-        columna: clave,
-        texto: formatear(fila[clave], `${ruta}.${clave === "valor" ? (clavesDeFormato?.[indice] ?? clave) : clave}`, idioma),
-        valorExacto: fila[clave],
-      })),
-    })),
+    filas,
+    filasTotales,
+    ...(filasTotales > filas.length ? {
+      filasCompletas,
+      avisoFilas: idioma === "es"
+        ? `Mostrando ${formatNumber(filas.length, idioma)} de ${formatNumber(filasTotales, idioma)} filas`
+        : `Showing ${formatNumber(filas.length, idioma)} of ${formatNumber(filasTotales, idioma)} rows`,
+    } : {}),
     ...metadatos,
   };
 }
@@ -115,20 +146,15 @@ function recorrer(
   valor: unknown,
   ruta: string,
   idioma: IdiomaTabla,
-  metadatos: Omit<TablaHerramienta, "titulo" | "ruta" | "columnas" | "filas">,
+  metadatos: Pick<TablaHerramienta, "fuente" | "formula" | "filtros" | "corte">,
   tablas: TablaHerramienta[],
+  profundidad = 0,
 ): void {
   if (Array.isArray(valor)) {
     const filas = valor.map((item) => esObjeto(item)
-      ? Object.fromEntries(Object.entries(item).filter(([, celda]) => !Array.isArray(celda) && !esObjeto(celda)))
+      ? Object.fromEntries(Object.entries(item))
       : { valor: item });
     tablas.push(tablaDeFilas(filas, ruta, idioma, metadatos));
-    valor.forEach((item, indice) => {
-      if (!esObjeto(item)) return;
-      for (const [clave, celda] of Object.entries(item)) {
-        if (Array.isArray(celda) || esObjeto(celda)) recorrer(celda, `${ruta}.${indice + 1}.${clave}`, idioma, metadatos, tablas);
-      }
-    });
     return;
   }
   if (!esObjeto(valor)) {
@@ -141,8 +167,9 @@ function recorrer(
     const filas = Object.entries(escalares).map(([clave, item]) => ({ clave: etiquetaCampo(clave, idioma), valor: item }));
     tablas.push(tablaDeFilas(filas, ruta, idioma, metadatos, Object.keys(escalares)));
   }
+  if (profundidad >= 2) return;
   for (const [clave, item] of Object.entries(valor)) {
-    if (Array.isArray(item) || esObjeto(item)) recorrer(item, `${ruta}.${clave}`, idioma, metadatos, tablas);
+    if (Array.isArray(item) || esObjeto(item)) recorrer(item, `${ruta}.${clave}`, idioma, metadatos, tablas, profundidad + 1);
   }
 }
 
@@ -160,9 +187,32 @@ export function renderizarTablas(salidasHerramientas: readonly unknown[], idioma
       corte: salida.corte,
     };
     const valor = salida.valor ?? { error: salida.error, detalle: salida.detalle, estado: salida.estado };
-    recorrer(valor, herramienta, idioma, metadatos, tablas);
+    const candidatas: TablaHerramienta[] = [];
+    recorrer(valor, herramienta, idioma, metadatos, candidatas);
+    const prioridad = (tabla: TablaHerramienta) => /(?:resumen|total|totales|consolid|indicador)/iu.test(tabla.ruta) ? 0 : 1;
+    const ordenadas = candidatas.map((tabla, orden) => ({ tabla, orden })).sort((a, b) => prioridad(a.tabla) - prioridad(b.tabla) || a.orden - b.orden);
+    const visibles = ordenadas.slice(0, MAX_TABLAS_HERRAMIENTA).map(({ tabla }) => tabla);
+    const omitidas = ordenadas.slice(MAX_TABLAS_HERRAMIENTA).map(({ tabla }) => tabla.titulo);
+    if (omitidas.length > 0 && visibles[0]) {
+      visibles[0].tablasOmitidas = omitidas;
+      visibles[0].avisoTablas = idioma === "es"
+        ? `Se omitieron ${formatNumber(omitidas.length, idioma)} tablas de detalle: ${omitidas.join("; ")}`
+        : `${formatNumber(omitidas.length, idioma)} detail tables omitted: ${omitidas.join("; ")}`;
+    }
+    tablas.push(...visibles);
   });
   return tablas;
+}
+
+const csvCelda = (valor: string) => `"${valor.replace(/"/gu, '""')}"`;
+
+/** Exporta siempre el conjunto completo cuando la tabla conserva sus filas originales. */
+export function tablaACsv(tabla: TablaHerramienta): string {
+  const filas = tabla.filasCompletas ?? tabla.filas;
+  return [
+    tabla.columnas.map((columna) => csvCelda(columna.etiqueta)).join(","),
+    ...filas.map((fila) => tabla.columnas.map((columna) => csvCelda(fila.celdas.find((celda) => celda.columna === columna.clave)?.texto ?? "")).join(",")),
+  ].join("\r\n");
 }
 
 const escapar = (texto: string) => texto.replace(/\|/gu, "\\|").replace(/\r?\n/gu, " ");
@@ -180,6 +230,8 @@ export function tablasAMarkdown(tablas: readonly TablaHerramienta[], idioma: Idi
   const corte = idioma === "es" ? "Corte" : "Cut-off";
   return tablas.map((tabla) => [
     `## ${tabla.titulo}`,
+    ...(tabla.avisoFilas ? [`> ${tabla.avisoFilas}`] : []),
+    ...(tabla.avisoTablas ? [`> ${tabla.avisoTablas}`] : []),
     `| ${tabla.columnas.map((columna) => escapar(columna.etiqueta)).join(" | ")} |`,
     `| ${tabla.columnas.map(() => "---").join(" | ")} |`,
     ...tabla.filas.map((fila) => `| ${fila.celdas.map((celda) => escapar(celda.texto)).join(" | ")} |`),

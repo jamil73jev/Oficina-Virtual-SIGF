@@ -15,6 +15,12 @@ describe("verificarCifras", () => {
     expect(verificarCifras(texto, [{ total: 31032.78 }]).noVerificadas).toHaveLength(0);
   });
 
+  it.each(["1,855,231.81", "1.855.231,81", "1855231.81"])("verifica importes grandes con formato regional: %s", (texto) => {
+    const resultado = verificarCifras(`Valor emitido ${texto}; cifra inventada 9,999,999.99.`, [{ totalValorEmitido: 1855231.81 }]);
+    expect(resultado.verificadas.map((cifra) => cifra.texto)).toContain(texto);
+    expect(resultado.noVerificadas.map((cifra) => cifra.texto)).toContain("9,999,999.99");
+  });
+
   it("excluye fechas, cortes, periodos, rangos, listas e identificadores", () => {
     const respuesta = "1. Corte 2026-08-31, periodo 2026-08, 23:59.\n2. Tramos 0-30 y 181-360; título T123 y código AB-456.";
     expect(verificarCifras(respuesta, []).noVerificadas).toEqual([]);

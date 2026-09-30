@@ -313,7 +313,10 @@ describe("agentes de area: seguridad", () => {
       },
     });
     const r = await env.consultar("cartera");
-    expect(r.estado).toBe("completado");
+    // Ninguna herramienta devolvio datos: el resultado no se da por completado.
+    expect(r.estado).toBe("sin_datos");
+    if (r.estado !== "sin_datos") return;
+    expect(r.mensaje).toMatch(/ninguna herramienta/i);
     expect(fuente.cargas).toBe(0);
 
     const denegadas = (await env.auditor.listar(ORG)).filter((e) => e.accion === "herramienta.denegada");
@@ -347,14 +350,15 @@ describe("agentes de area: seguridad", () => {
     expect(modoDatosDe({ tipo: undefined as never })).toBe("real");
 
     // Fuente real con modelo local: permitido, pero la ejecucion queda marcada como real.
+    // (El modelo simulado por defecto no invoca herramientas: el resultado es sin_datos.)
     const local = montar({ fuente: fuenteEspia({ tipo: "real" }) });
-    expect((await local.consultar("datos")).estado).toBe("completado");
+    expect((await local.consultar("datos")).estado).toBe("sin_datos");
     const consulta = (await local.auditor.listar(ORG)).find((e) => e.accion === "agente_area.consulta");
     expect(consulta?.despues).toMatchObject({ modoDatos: "real" });
 
     // Fuente sintetica con modelo en la nube: la politica lo admite.
     const nube = montar({ modelo: new ModeloNube() });
-    expect((await nube.consultar("datos")).estado).toBe("completado");
+    expect((await nube.consultar("datos")).estado).toBe("sin_datos");
   });
 
   it("pausa al llegar al tope de presupuesto del agente", async () => {

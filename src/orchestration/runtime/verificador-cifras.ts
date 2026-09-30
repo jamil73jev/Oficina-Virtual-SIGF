@@ -110,12 +110,32 @@ function extraer(texto: string): CifraExtraida[] {
   return cifras;
 }
 
+const PATRON_FECHA_ISO = /\b(\d{4})-(0[1-9]|1[0-2])(?:-(0[1-9]|[12]\d|3[01]))?(?!\d)/gu;
+
+/**
+ * Las fechas ISO se excluyen como cifras, pero una respuesta puede escribirlas en palabras
+ * ("31 de agosto de 2026"): se exponen su anio, mes y dia como valores emitidos.
+ */
+function componentesDeFechas(texto: string, resultado: Array<{ valor: number; porcentaje: boolean }>): void {
+  PATRON_FECHA_ISO.lastIndex = 0;
+  for (const [, anio, mes, dia] of texto.matchAll(PATRON_FECHA_ISO)) {
+    for (const parte of [anio, mes, dia]) {
+      if (parte !== undefined) resultado.push({ valor: Number(parte), porcentaje: false });
+    }
+  }
+}
+
 function cifrasDeHerramientas(valor: unknown, resultado: Array<{ valor: number; porcentaje: boolean }>): void {
   if (typeof valor === "number" && Number.isFinite(valor)) {
     resultado.push({ valor, porcentaje: false });
     return;
   }
+  if (valor instanceof Date) {
+    if (!Number.isNaN(valor.getTime())) componentesDeFechas(valor.toISOString(), resultado);
+    return;
+  }
   if (typeof valor === "string") {
+    componentesDeFechas(valor, resultado);
     for (const cifra of extraer(valor)) {
       const normalizada = normalizar(cifra.texto);
       if (normalizada) {

@@ -49,6 +49,11 @@ export interface AgenteArea {
   alojamiento: Alojamiento;
   /** Tope por agente (tokens, costo simulado e iteraciones) para el guard de presupuesto. */
   presupuesto: Uso;
+  /**
+   * Agentes a los que este agente PUEDE traspasar trabajo en una operacion (grafo dirigido
+   * coherente con el esquema SIGF). Un traspaso fuera de esta lista se rechaza y se audita.
+   */
+  colaboradores: readonly IdAgenteArea[];
 }
 
 const presupuesto = (tokens: number): Uso => ({ tokens, costo: tokens * PRECIO_TOKEN, iteraciones: 40 });
@@ -71,6 +76,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(200_000),
+    colaboradores: ["director"],
   },
   cartera: {
     id: "cartera",
@@ -83,6 +89,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(200_000),
+    colaboradores: ["coactiva", "director"],
   },
   datos: {
     id: "datos",
@@ -95,6 +102,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(150_000),
+    colaboradores: ["control-estadistica", "director"],
   },
   tesorero: {
     id: "tesorero",
@@ -107,6 +115,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(100_000),
+    colaboradores: ["contador", "director"],
   },
   presupuestista: {
     id: "presupuestista",
@@ -124,6 +133,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(150_000),
+    colaboradores: ["director"],
   },
   contador: {
     id: "contador",
@@ -136,6 +146,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(150_000),
+    colaboradores: ["presupuestista", "director"],
   },
   pagador: {
     id: "pagador",
@@ -148,6 +159,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(100_000),
+    colaboradores: ["tesorero"],
   },
   "cajero-mayor": {
     id: "cajero-mayor",
@@ -160,6 +172,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(100_000),
+    colaboradores: ["tesorero"],
   },
   rentas: {
     id: "rentas",
@@ -177,6 +190,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(200_000),
+    colaboradores: ["cartera", "coactiva"],
   },
   coactiva: {
     id: "coactiva",
@@ -194,6 +208,7 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(200_000),
+    colaboradores: ["director"],
   },
   director: {
     id: "director",
@@ -206,6 +221,19 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(150_000),
+    colaboradores: [
+      "control-estadistica",
+      "cartera",
+      "datos",
+      "tesorero",
+      "presupuestista",
+      "contador",
+      "pagador",
+      "cajero-mayor",
+      "rentas",
+      "coactiva",
+      "planificacion",
+    ],
   },
   planificacion: {
     id: "planificacion",
@@ -223,12 +251,19 @@ export const CATALOGO_AGENTES_AREA = {
     modelo: "simulado",
     alojamiento: "local",
     presupuesto: presupuesto(150_000),
+    colaboradores: ["director"],
   },
 } as const satisfies Record<IdAgenteArea, AgenteArea>;
 
 export const AGENTES_AREA: readonly AgenteArea[] = Object.values(CATALOGO_AGENTES_AREA);
 
 export const esIdAgenteArea = (id: string): id is IdAgenteArea => Object.hasOwn(CATALOGO_AGENTES_AREA, id);
+
+/** true si `desde` puede traspasar trabajo a `hacia` segun el grafo de colaboradores. */
+export function puedeTraspasar(desde: string, hacia: string): boolean {
+  if (!esIdAgenteArea(desde) || !esIdAgenteArea(hacia) || desde === hacia) return false;
+  return (CATALOGO_AGENTES_AREA[desde].colaboradores as readonly IdAgenteArea[]).includes(hacia);
+}
 
 export function obtenerAgenteArea(id: string): AgenteArea {
   const a = AGENTES_AREA.find((x) => x.id === id);

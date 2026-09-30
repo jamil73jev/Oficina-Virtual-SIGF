@@ -1,13 +1,20 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "./cn";
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("rounded-lg border border-subtle bg-raised p-5 text-foreground", className)}
-      {...props}
-    />
-  );
+type Variant = "default" | "flat" | "raised";
+
+const variants: Record<Variant, string> = {
+  default: "border border-subtle bg-raised shadow-xs",
+  flat: "border border-subtle bg-surface",
+  raised: "border border-subtle bg-raised shadow-md",
+};
+
+export function Card({
+  variant = "default",
+  className,
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { variant?: Variant }) {
+  return <div className={cn("rounded-lg p-5 text-foreground", variants[variant], className)} {...props} />;
 }
 
 export function CardTitle({
@@ -15,5 +22,5 @@ export function CardTitle({
   className,
   ...props
 }: HTMLAttributes<HTMLHeadingElement> & { as?: "h2" | "h3" | "h4" }) {
-  return <Tag className={cn("text-base font-semibold", className)} {...props} />;
+  return <Tag className={cn("text-base font-semibold leading-snug", className)} {...props} />;
 }

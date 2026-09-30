@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { isLocale, locales } from "@/core/i18n/config";
 import { AGENTES_AREA } from "@/modules/agentes-area";
 import { mensajesAgentes, PanelAgentes, type LocaleAgentes } from "@/modules/agentes-ui";
@@ -23,13 +24,10 @@ export default async function AgentesPage({ params }: { params: Promise<{ locale
   const t = mensajesAgentes[idioma];
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6" aria-labelledby="titulo-agentes">
-      <header>
-        <h1 id="titulo-agentes" className="text-2xl font-bold">{t.titulo}</h1>
-        <p className="text-muted">{t.subtitulo}</p>
-      </header>
+    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+      <PageHeader id="titulo-agentes" title={t.titulo} subtitle={t.subtitulo} />
       <PanelAgentes agentes={AGENTES_AREA} locale={idioma} />
-    </main>
+    </div>
   );
 }
 

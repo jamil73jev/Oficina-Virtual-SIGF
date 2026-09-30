@@ -1,5 +1,12 @@
 export { Button, type ButtonProps } from "./Button";
 export { Input, type InputProps } from "./Input";
 export { Card, CardTitle } from "./Card";
-export { Badge } from "./Badge";
+export { Badge, type BadgeTone } from "./Badge";
 export { Dialog, type DialogProps } from "./Dialog";
+export { Tabs, type TabItem } from "./Tabs";
+export { Tooltip } from "./Tooltip";
+export { Skeleton } from "./Skeleton";
+export { EmptyState } from "./EmptyState";
+export { StatCard } from "./StatCard";
+export { DataTable, type Columna } from "./DataTable";
+export { Icon, type NombreIcono } from "./icons";

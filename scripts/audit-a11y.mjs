@@ -18,6 +18,8 @@ const paths = [
   "/en/finanzas",
   "/es/agentes",
   "/en/agentes",
+  "/es/operaciones",
+  "/en/operaciones",
 ];
 const browser = await chromium.launch({ channel: process.env.AUDIT_CHANNEL ?? "chrome" });
 let failed = false;

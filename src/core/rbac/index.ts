@@ -26,6 +26,8 @@ export const ACCIONES = [
   "presupuesto:ampliar",
   "auditoria:leer",
   "auditoria:exportar",
+  "operacion:leer",
+  "operacion:crear",
 ] as const;
 
 export type Accion = (typeof ACCIONES)[number];
@@ -36,6 +38,7 @@ const LECTURA: readonly Accion[] = [
   "agente:leer",
   "aprobacion:leer",
   "presupuesto:leer",
+  "operacion:leer",
 ];
 
 const SUPERVISOR: readonly Accion[] = [
@@ -48,6 +51,7 @@ const SUPERVISOR: readonly Accion[] = [
   "agente:pausar",
   "aprobacion:decidir",
   "auditoria:leer",
+  "operacion:crear",
 ];
 
 const ADMIN: readonly Accion[] = [

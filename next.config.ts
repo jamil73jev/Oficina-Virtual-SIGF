@@ -48,6 +48,9 @@ export function cabecerasSeguridad(dev: boolean) {
 
 const nextConfig: NextConfig = {
   turbopack: { root: path.resolve(__dirname) },
+  // Experimental (solo en produccion): el CSS va en <style> dentro del HTML y el navegador
+  // no espera otra peticion para pintar. Adecuado con Tailwind (CSS pequeno). Medir el LCP.
+  experimental: { inlineCss: true },
   async headers() {
     return [
       {

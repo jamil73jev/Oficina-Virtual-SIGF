@@ -4,8 +4,8 @@ import {
   ejecutarAgenteArea,
   fuenteSintetica,
   sembrarPresupuestosArea,
+  LLAMADAS_DEMO,
   type IdAgenteArea,
-  type NombreHerramientaArea,
 } from "@/modules/agentes-area";
 import { ModeloSimulado, type GuionSimulado } from "@/orchestration/runtime/modelo";
 import { mensajesAgentes, type LocaleAgentes } from "./mensajes";
@@ -13,67 +13,7 @@ import { mensajesAgentes, type LocaleAgentes } from "./mensajes";
 const AMPLIO = { tokens: 1_000_000, costo: 10_000, iteraciones: 1_000 };
 
 /** Llamada guionada de la demo: una herramienta permitida del agente y las cifras que se muestran. */
-export interface LlamadaDemo {
-  nombre: NombreHerramientaArea;
-  args: Record<string, unknown>;
-  /** Rutas dentro de `valor` que se copian a la respuesta (nunca se calculan). */
-  cifras: readonly string[];
-}
-
-export const LLAMADAS_DEMO: Record<IdAgenteArea, LlamadaDemo> = {
-  "control-estadistica": {
-    nombre: "recaudacion_neta",
-    args: {},
-    cifras: ["bruto", "reversosNormales", "reversosExtemporaneos", "neto"],
-  },
-  cartera: { nombre: "saldo_cartera_por_titulo", args: {}, cifras: ["totalSaldo", "cantidadTitulos", "titulosConVariosJuicios"] },
-  datos: {
-    nombre: "calidad_datos",
-    args: {},
-    cifras: ["totalGeneral", "identificaciones.invalidas.cantidad", "sinParroquia.cantidad"],
-  },
-  tesorero: {
-    nombre: "conciliar_banco",
-    args: {},
-    cifras: ["conciliado.valor", "pendiente.valor", "diferencias.valorNeto", "cuadra"],
-  },
-  presupuestista: {
-    nombre: "ejecucion_presupuestaria",
-    args: {},
-    cifras: ["totales.ingreso.codificado", "totales.ingreso.recaudadoOPagado", "totales.gasto.codificado", "totales.gasto.devengado"],
-  },
-  contador: {
-    nombre: "balance_comprobacion",
-    args: {},
-    cifras: ["totalDebe", "totalHaber", "diferencia", "cuadra", "cantidadAsientos"],
-  },
-  pagador: {
-    nombre: "resumen_ordenes_pago",
-    args: {},
-    cifras: ["total.cantidad", "total.valor", "porEstado.solicitada.valor", "porEstado.validada.valor"],
-  },
-  "cajero-mayor": { nombre: "arqueo_caja", args: {}, cifras: ["totalTurnos", "cerrados", "sobrante", "faltante", "cuadre"] },
-  rentas: {
-    nombre: "emision_por_rubro",
-    args: {},
-    cifras: ["totalTitulos", "totalValorEmitido", "titulosPosterioresAlCorte"],
-  },
-  coactiva: {
-    nombre: "recuperacion_coactiva",
-    args: {},
-    cifras: ["cantidadTitulos", "totalBaseCoactiva", "totalRecuperado", "porcentajeRecuperado"],
-  },
-  director: {
-    nombre: "tablero_ejecutivo",
-    args: {},
-    cifras: ["totalIndicadores", "totalAlertas", "compromisosAbiertos"],
-  },
-  planificacion: {
-    nombre: "comparativo_interanual",
-    args: {},
-    cifras: ["filas.0.actual", "filas.0.anterior", "filas.0.variacionAbsoluta", "filas.0.variacionPct"],
-  },
-};
+export { LLAMADAS_DEMO } from "@/modules/agentes-area";
 
 /**
  * Modelo guionado de la demo: llama a la herramienta del agente y redacta una respuesta legible
