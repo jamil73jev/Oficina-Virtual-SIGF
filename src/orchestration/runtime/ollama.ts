@@ -8,6 +8,7 @@ import type {
   PeticionTexto,
   UsoModelo,
 } from "./modelo";
+import { crearModeloGateway, type OpcionesModeloNube } from "./modelo-nube";
 
 export class OllamaNoLocalError extends Error {
   constructor(readonly url: string) {
@@ -214,14 +215,19 @@ export class ModeloOllama implements ModeloLenguaje {
 
 export function crearModeloDesdeEntorno(
   env: Record<string, string | undefined> = process.env,
-  opciones: Omit<OpcionesModeloOllama, "urlBase"> = {},
-): ModeloOllama | null {
-  const configurado = env.MODELO_LOCAL;
+  opciones: Omit<OpcionesModeloOllama, "urlBase"> & { nube?: OpcionesModeloNube } = {},
+): ModeloLenguaje | null {
+  const configurado = env.MODELO?.trim() || env.MODELO_LOCAL;
   if (configurado === undefined || configurado.trim() === "") return null;
+  const gateway = /^gateway:(.*)$/.exec(configurado.trim());
+  if (gateway) return crearModeloGateway(gateway[1] ?? "", env, opciones.nube);
   const coincidencia = /^ollama:(.+)$/.exec(configurado.trim());
   if (!coincidencia?.[1]?.trim()) throw new OllamaConfiguracionError(configurado);
   return new ModeloOllama(coincidencia[1].trim(), {
-    ...opciones,
+    fetch: opciones.fetch,
+    timeoutMs: opciones.timeoutMs,
+    semilla: opciones.semilla,
+    numPredict: opciones.numPredict,
     urlBase: env.OLLAMA_URL?.trim() || "http://127.0.0.1:11434",
   });
 }

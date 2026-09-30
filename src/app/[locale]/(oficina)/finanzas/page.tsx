@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { isLocale, locales } from "@/core/i18n/config";
+import { exigirIdentidadPagina } from "@/core/auth/pagina";
 import {
   mensajesPanelFinanciero,
   obtenerServicioPanelFinanciero,
@@ -34,6 +35,7 @@ export default async function FinanzasPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   setRequestLocale(locale);
+  await exigirIdentidadPagina(locale);
 
   const servicio = obtenerServicioPanelFinanciero();
   const panel = await servicio.obtenerPanel();

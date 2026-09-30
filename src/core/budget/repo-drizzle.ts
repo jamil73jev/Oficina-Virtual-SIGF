@@ -161,6 +161,22 @@ export class PresupuestoDrizzleRepo implements PresupuestoRepo {
     await upsert(this.db, orgId, clave, estado, periodo);
   }
 
+  /**
+   * Alta solo si no existe (no toca lo ya consumido). Para sembrar presupuestos al arrancar
+   * cada instancia serverless sin reiniciar el consumo acumulado.
+   */
+  async definirSiFalta(
+    orgId: string,
+    clave: ClavePresupuesto,
+    estado: EstadoPresupuesto,
+    periodo = PERIODO_VIGENTE,
+  ): Promise<void> {
+    await this.db
+      .insert(presupuesto)
+      .values({ orgId, ambito: clave.ambito, refId: clave.refId, periodo, ...columnas(estado) })
+      .onConflictDoNothing({ target: [presupuesto.orgId, presupuesto.ambito, presupuesto.refId] });
+  }
+
   async leer(orgId: string, clave: ClavePresupuesto): Promise<EstadoPresupuesto | null> {
     const [f] = await this.db.select().from(presupuesto).where(deClave(orgId, clave));
     return f ? aEstado(f) : null;

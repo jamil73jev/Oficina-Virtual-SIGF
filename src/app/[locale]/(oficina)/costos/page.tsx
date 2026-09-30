@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
+import { exigirIdentidadPagina } from "@/core/auth/pagina";
 import { isLocale, locales, type Locale } from "@/core/i18n/config";
 import {
   mensajesDashboards,
@@ -35,14 +36,11 @@ export default async function CostosPage({
   if (!isLocale(locale)) notFound();
   setRequestLocale(locale);
 
+  // Identidad real (sesion + MFA + membresia): la org y el rol salen de la membresia.
+  const { ctx } = await exigirIdentidadPagina(locale);
   const servicio = obtenerServicioDashboards();
-  const demoCtx = {
-    usuarioId: "00000000-0000-4000-8000-000000000002",
-    orgId: "00000000-0000-4000-8000-000000000001",
-    rol: "viewer" as const,
-  };
 
-  const resumen = await servicio.obtenerResumen(demoCtx, undefined, {
+  const resumen = await servicio.obtenerResumen(ctx, undefined, {
     locale: locale as Locale,
   });
 

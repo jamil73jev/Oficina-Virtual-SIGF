@@ -3,6 +3,7 @@ import { asc, desc, eq, sql } from "drizzle-orm";
 import { enTransaccionOrg, type BaseDatos, type TransaccionBd } from "@/core/db";
 import { auditoria } from "@/core/db/schema";
 import {
+  Auditor,
   calcularHash,
   redactar,
   resolverClaveHmac,
@@ -114,5 +115,23 @@ export class AuditoriaDrizzleRepo implements AuditoriaRepo {
       await insertarEn(tx, entrada);
       return entrada;
     });
+  }
+}
+
+/**
+ * Auditor para varias instancias: `anexar` delega en el anexo atomico de Postgres en lugar de
+ * leer-calcular-insertar en pasos separados (que solo serializa dentro de un proceso). Mismo
+ * contrato que Auditor; listar y verificar no cambian.
+ */
+export class AuditorPostgres extends Auditor {
+  constructor(
+    private readonly repoPg: AuditoriaDrizzleRepo,
+    private readonly opcionesPg: OpcionesAuditor = {},
+  ) {
+    super(repoPg, opcionesPg);
+  }
+
+  override anexar(nueva: NuevaEntrada): Promise<EntradaAuditoria> {
+    return this.repoPg.anexarAtomico(nueva, this.opcionesPg);
   }
 }

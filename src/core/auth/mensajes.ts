@@ -1,0 +1,143 @@
+/** Textos de autenticacion (login, MFA, seguridad y menu de usuario). ES y EN con las mismas claves. */
+export const mensajesAuth = {
+  es: {
+    login: {
+      titulo: "Iniciar sesión",
+      subtitulo: "Acceso privado a la oficina virtual. No hay registro abierto.",
+      correo: "Correo electrónico",
+      contrasena: "Contraseña",
+      entrar: "Entrar",
+      entrando: "Entrando…",
+      errorCredenciales: "No se pudo iniciar sesión. Revisa el correo y la contraseña.",
+      errorServicio: "El servicio de acceso no está disponible. Inténtalo más tarde.",
+      errorDatos: "Escribe un correo válido y tu contraseña.",
+      desarrollo:
+        "Modo desarrollo: el acceso con Supabase está desactivado. Usa la identidad de desarrollo (APPROVALS_DEV_IDENTITY).",
+    },
+    desafio: {
+      titulo: "Verificación en dos pasos",
+      subtitulo: "Escribe el código de 6 dígitos de tu aplicación de autenticación.",
+      codigo: "Código de verificación",
+      ayudaCodigo: "6 dígitos, sin espacios.",
+      verificar: "Verificar",
+      verificando: "Verificando…",
+      errorCodigo: "El código no es válido o ha caducado. Prueba con el código actual.",
+      errorFormato: "El código debe tener 6 dígitos.",
+      errorSinFactor: "No hay un autenticador configurado. Configúralo primero.",
+      irAInscribir: "Configurar autenticador",
+    },
+    mfa: {
+      titulo: "Autenticación en dos pasos",
+      subtitulo: "Protege tu cuenta con un código temporal (TOTP) de una aplicación de autenticación.",
+      activa: "La verificación en dos pasos está activa en tu cuenta.",
+      inactiva: "Todavía no tienes un autenticador configurado.",
+      obligatoria: "Para entrar a la oficina debes configurar la verificación en dos pasos.",
+      empezar: "Configurar autenticador",
+      generando: "Generando…",
+      paso1: "1. Escanea este código QR con tu aplicación de autenticación.",
+      altQr: "Código QR para configurar la aplicación de autenticación",
+      secretoManual: "Si no puedes escanearlo, escribe esta clave en la aplicación:",
+      paso2: "2. Escribe el código de 6 dígitos que muestra la aplicación.",
+      confirmar: "Verificar y activar",
+      confirmando: "Verificando…",
+      exito: "Listo: la verificación en dos pasos quedó activada.",
+      irPortada: "Ir a la oficina",
+      errorInscripcion: "No se pudo iniciar la configuración. Inténtalo de nuevo.",
+      errorCodigo: "El código no es válido. Revisa la hora del dispositivo y prueba otra vez.",
+      errorFormato: "El código debe tener 6 dígitos.",
+      noDisponible: "La configuración de la verificación en dos pasos no está disponible en modo desarrollo.",
+    },
+    sinAcceso: {
+      titulo: "Sin acceso",
+      mensaje:
+        "Tu cuenta inició sesión, pero no tiene acceso a ninguna organización de la oficina. Pide al administrador que te dé de alta.",
+    },
+    menu: {
+      cuenta: "Cuenta",
+      abrir: "Abrir menú de usuario",
+      rol: "Rol",
+      seguridad: "Seguridad (verificación en dos pasos)",
+      cerrarSesion: "Cerrar sesión",
+      identidadDesarrollo: "Identidad de desarrollo",
+    },
+    roles: {
+      owner: "Propietario",
+      admin: "Administrador",
+      supervisor: "Supervisor",
+      viewer: "Lector",
+    },
+  },
+  en: {
+    login: {
+      titulo: "Sign in",
+      subtitulo: "Private access to the virtual office. There is no open sign-up.",
+      correo: "Email",
+      contrasena: "Password",
+      entrar: "Sign in",
+      entrando: "Signing in…",
+      errorCredenciales: "Could not sign in. Check your email and password.",
+      errorServicio: "The sign-in service is unavailable. Try again later.",
+      errorDatos: "Enter a valid email and your password.",
+      desarrollo:
+        "Development mode: Supabase sign-in is disabled. Use the development identity (APPROVALS_DEV_IDENTITY).",
+    },
+    desafio: {
+      titulo: "Two-step verification",
+      subtitulo: "Enter the 6-digit code from your authenticator app.",
+      codigo: "Verification code",
+      ayudaCodigo: "6 digits, no spaces.",
+      verificar: "Verify",
+      verificando: "Verifying…",
+      errorCodigo: "The code is invalid or expired. Try the current code.",
+      errorFormato: "The code must have 6 digits.",
+      errorSinFactor: "No authenticator is set up. Set one up first.",
+      irAInscribir: "Set up authenticator",
+    },
+    mfa: {
+      titulo: "Two-step authentication",
+      subtitulo: "Protect your account with a time-based code (TOTP) from an authenticator app.",
+      activa: "Two-step verification is active on your account.",
+      inactiva: "You have not set up an authenticator yet.",
+      obligatoria: "You must set up two-step verification to enter the office.",
+      empezar: "Set up authenticator",
+      generando: "Generating…",
+      paso1: "1. Scan this QR code with your authenticator app.",
+      altQr: "QR code to set up the authenticator app",
+      secretoManual: "If you cannot scan it, type this key into the app:",
+      paso2: "2. Enter the 6-digit code shown by the app.",
+      confirmar: "Verify and enable",
+      confirmando: "Verifying…",
+      exito: "Done: two-step verification is now enabled.",
+      irPortada: "Go to the office",
+      errorInscripcion: "Could not start the setup. Please try again.",
+      errorCodigo: "The code is invalid. Check the device time and try again.",
+      errorFormato: "The code must have 6 digits.",
+      noDisponible: "Two-step verification setup is not available in development mode.",
+    },
+    sinAcceso: {
+      titulo: "No access",
+      mensaje:
+        "Your account is signed in but has no access to any organization in the office. Ask the administrator to add you.",
+    },
+    menu: {
+      cuenta: "Account",
+      abrir: "Open user menu",
+      rol: "Role",
+      seguridad: "Security (two-step verification)",
+      cerrarSesion: "Sign out",
+      identidadDesarrollo: "Development identity",
+    },
+    roles: {
+      owner: "Owner",
+      admin: "Administrator",
+      supervisor: "Supervisor",
+      viewer: "Viewer",
+    },
+  },
+} as const;
+
+export type LocaleAuth = keyof typeof mensajesAuth;
+
+export function localeAuth(locale: string): LocaleAuth {
+  return locale === "en" ? "en" : "es";
+}

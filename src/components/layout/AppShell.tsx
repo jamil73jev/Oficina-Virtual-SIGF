@@ -7,6 +7,7 @@ import { ThemeToggle, type EtiquetasTema } from "@/components/theme/ThemeToggle"
 import { esRutaActiva, quitarLocale } from "@/components/theme/tema";
 import { Icon } from "@/components/ui/icons";
 import { cn } from "@/components/ui/cn";
+import { MenuUsuario } from "./MenuUsuario";
 import { NAV_GRUPOS, NAV_PRINCIPAL, type ClaveGrupo, type ClaveNav, type ItemNav } from "./nav";
 
 export interface EtiquetasShell {
@@ -40,6 +41,8 @@ export function AppShell({
   const pathname = usePathname() ?? `/${locale}`;
   const [abierto, setAbierto] = useState(false);
   const menuId = "menu-principal";
+  // En el login (y su desafio MFA) no hay navegacion de la oficina ni menu de usuario.
+  const enAcceso = /^\/login(\/|$)/.test(quitarLocale(pathname, locales));
 
   const enlace = (item: ItemNav, principal = false) => {
     const href = `/${locale}${item.path}`;
@@ -76,7 +79,7 @@ export function AppShell({
         {labels.skip}
       </a>
       <div className="flex min-h-screen flex-col md:flex-row">
-        <aside className="border-b border-subtle bg-sidebar md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:overflow-y-auto md:border-b-0 md:border-r">
+        <aside hidden={enAcceso} className="border-b border-subtle bg-sidebar md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:overflow-y-auto md:border-b-0 md:border-r">
           <div className="flex items-center justify-between gap-2 px-4 py-3 md:py-5">
             <p className="font-display text-lg font-semibold tracking-tight">{labels.appName}</p>
             <button
@@ -114,6 +117,7 @@ export function AppShell({
               {labels.timezone}: {timeZoneText}
             </p>
             <div className="flex flex-wrap items-center gap-3">
+              {!enAcceso && <MenuUsuario locale={locale} ruta={pathname} />}
               <ThemeToggle etiquetas={labels.theme} />
               <nav aria-label={labels.language}>
                 <ul className="flex gap-1">

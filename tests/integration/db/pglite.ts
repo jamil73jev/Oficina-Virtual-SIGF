@@ -19,10 +19,12 @@ export interface BdPrueba {
   /** Ejecuta SQL como propietario (superusuario de PGlite) y vuelve al rol app_rw. */
   comoPropietario<T>(fn: () => Promise<T>): Promise<T>;
   nuevaOrg(): Promise<OrgSembrada>;
+  /** Solo organizacion y usuarios: sin proyecto, agente, tarea ni ejecucion sembrados. */
+  nuevaOrgLimpia(): Promise<OrgSembrada>;
   cerrar(): Promise<void>;
 }
 
-/** Aplica migraciones drizzle-kit + SQL de endurecimiento (0001, 0002) sobre un PGlite. */
+/** Aplica migraciones drizzle-kit + SQL escrito a mano (src/core/db/sql) sobre un PGlite. */
 export async function aplicarEsquema(client: PGlite): Promise<void> {
   await migrate(drizzle(client), { migrationsFolder: CARPETA_MIGRACIONES });
   for (const { sql } of await leerSqlEndurecimiento()) await client.exec(sql);
@@ -85,11 +87,28 @@ export async function crearBdPrueba(): Promise<BdPrueba> {
       return o;
     });
 
+  const nuevaOrgLimpia = () =>
+    comoPropietario(async () => {
+      const o = await orgEnMemoria();
+      const [u1, u2] = o.usuarios;
+      await client.query(
+        `INSERT INTO organizacion (id, nombre, huso, moneda, locale)
+           VALUES ($1, 'Org prueba', 'America/Guayaquil', 'USD', 'es')`,
+        [o.orgId],
+      );
+      await client.query(
+        "INSERT INTO usuario (id, email) VALUES ($1, $2), ($3, $4)",
+        [u1, `${u1}@prueba.test`, u2, `${u2}@prueba.test`],
+      );
+      return o;
+    });
+
   return {
     client,
     db: drizzle(client),
     comoPropietario,
     nuevaOrg,
+    nuevaOrgLimpia,
     cerrar: () => client.close(),
   };
 }

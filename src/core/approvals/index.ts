@@ -1,22 +1,20 @@
-import { Auditor, AuditoriaMemoriaRepo } from "@/core/audit";
+import { baseDatosDe, crearAuditor, modoPersistencia, unicoPorProceso, type OpcionesFabrica } from "@/core/db/persistencia";
 import { AprobacionesMemoriaRepo } from "./repo";
+import { AprobacionesDrizzleRepo } from "./repo-drizzle";
 import { ServicioAprobaciones } from "./service";
 
 export * from "./repo";
 export * from "./service";
 export * from "./http";
 
-const CLAVE = Symbol.for("oficina-virtual.servicioAprobaciones");
+/** Servicio segun el entorno: Postgres con PERSISTENCIA=drizzle; si no, memoria. */
+export function crearServicioAprobaciones(opciones: OpcionesFabrica = {}): ServicioAprobaciones {
+  const modo = modoPersistencia(opciones.env);
+  const repo = modo === "drizzle" ? new AprobacionesDrizzleRepo(baseDatosDe(opciones)) : new AprobacionesMemoriaRepo();
+  return new ServicioAprobaciones(repo, crearAuditor(modo, opciones));
+}
 
-/**
- * Servicio compartido en memoria (sin BD real todavia). PENDIENTE: sustituir
- * por repos Drizzle/Postgres con RLS por org_id al cablear el esquema.
- */
+/** Servicio compartido del proceso (en Vercel exige PERSISTENCIA=drizzle). */
 export function obtenerServicioAprobaciones(): ServicioAprobaciones {
-  const g = globalThis as unknown as Record<symbol, ServicioAprobaciones>;
-  g[CLAVE] ??= new ServicioAprobaciones(
-    new AprobacionesMemoriaRepo(),
-    new Auditor(new AuditoriaMemoriaRepo()),
-  );
-  return g[CLAVE];
+  return unicoPorProceso("servicioAprobaciones", () => crearServicioAprobaciones());
 }

@@ -1,11 +1,10 @@
-import { identidadPendiente } from "@/core/approvals";
+import { conAutenticacion, obtenerProveedorIdentidad } from "@/core/auth";
 import { crearManejadoresDocumentos, obtenerServicioDocumentos } from "@/modules/documentos";
 
-export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const POST = conAutenticacion(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { id } = await ctx.params;
   return crearManejadoresDocumentos({
     servicio: obtenerServicioDocumentos(),
-    identidad: identidadPendiente,
+    identidad: obtenerProveedorIdentidad(),
   }).versionar(req, id);
-}
-
+});

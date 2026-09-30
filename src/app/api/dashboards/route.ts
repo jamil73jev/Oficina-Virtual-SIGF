@@ -1,4 +1,4 @@
-import { identidadPendiente } from "@/core/approvals";
+import { conAutenticacion, obtenerProveedorIdentidad } from "@/core/auth";
 import {
   crearManejadoresDashboards,
   obtenerServicioDashboards,
@@ -7,9 +7,9 @@ import {
 const manejadores = () =>
   crearManejadoresDashboards({
     servicio: obtenerServicioDashboards(),
-    identidad: identidadPendiente,
+    identidad: obtenerProveedorIdentidad(),
   });
 
-export async function GET(req: Request) {
+export const GET = conAutenticacion(async (req: Request) => {
   return manejadores().resumen(req);
-}
+});

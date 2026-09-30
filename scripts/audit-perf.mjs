@@ -17,7 +17,9 @@ try {
     const lcp = a["largest-contentful-paint"].numericValue;
     const cls = a["cumulative-layout-shift"].numericValue;
     const tbt = a["total-blocking-time"].numericValue;
-    const ok = Object.values(s).every((v) => v >= MIN) && lcp < 2500 && cls < 0.1 && tbt < 200;
+    // SEO no cuenta para aprobar: la aplicacion es privada y sus paginas llevan noindex A PROPOSITO.
+    // Ademas, sin sesion las rutas redirigen al login (tambien noindex), que es lo que se mide aqui.
+    const ok = Object.entries(s).every(([k, v]) => k === "seo" || v >= MIN) && lcp < 2500 && cls < 0.1 && tbt < 200;
     if (!ok) failed = true;
     console.log(`${ok ? "OK  " : "FAIL"} ${p}`, JSON.stringify(s), `LCP=${Math.round(lcp)}ms CLS=${cls.toFixed(3)} TBT=${Math.round(tbt)}ms`);
     if (detalle) {

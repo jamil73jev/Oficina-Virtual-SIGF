@@ -1,15 +1,12 @@
-import {
-  crearManejadoresAprobaciones,
-  identidadPendiente,
-  obtenerServicioAprobaciones,
-} from "@/core/approvals";
+import { crearManejadoresAprobaciones, obtenerServicioAprobaciones } from "@/core/approvals";
+import { conAutenticacion, obtenerProveedorIdentidad } from "@/core/auth";
 
 const manejadores = () =>
   crearManejadoresAprobaciones({
     servicio: obtenerServicioAprobaciones(),
-    identidad: identidadPendiente,
+    identidad: obtenerProveedorIdentidad(),
   });
 
-export async function GET(req: Request) {
+export const GET = conAutenticacion(async (req: Request) => {
   return manejadores().listar(req);
-}
+});

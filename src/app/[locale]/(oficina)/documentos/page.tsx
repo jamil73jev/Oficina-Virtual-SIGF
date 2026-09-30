@@ -4,11 +4,13 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { isLocale } from "@/core/i18n/config";
 import { ListaDocumentos } from "@/modules/documentos/ListaDocumentos";
 import { mensajesDocumentos, type LocaleDocumentos } from "@/modules/documentos/mensajes";
+import { exigirIdentidadPagina } from "@/core/auth/pagina";
 
 export default async function DocumentosPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale) || !(locale in mensajesDocumentos)) notFound();
   setRequestLocale(locale);
+  await exigirIdentidadPagina(locale);
   const idioma = locale as LocaleDocumentos;
   const t = mensajesDocumentos[idioma];
 

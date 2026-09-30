@@ -1,3 +1,4 @@
+import { baseDatosDe, modoPersistencia, unicoPorProceso, type OpcionesFabrica } from "@/core/db/persistencia";
 import {
   AprobacionesMemoriaRepoDashboards,
   EjecucionesMemoriaRepo,
@@ -5,6 +6,13 @@ import {
   PresupuestosMemoriaRepo,
   TareasMemoriaRepo,
 } from "./ports";
+import {
+  LectorAprobacionesDrizzle,
+  LectorEjecucionesDrizzle,
+  LectorOrganizacionesDrizzle,
+  LectorPresupuestosDrizzle,
+  LectorTareasDrizzle,
+} from "./repo-drizzle";
 import { ServicioDashboards } from "./service";
 
 export * from "./domain";
@@ -13,11 +21,22 @@ export * from "./service";
 export * from "./http";
 export * from "./mensajes";
 
-const CLAVE = Symbol.for("oficina-virtual.servicioDashboards");
-
-export function obtenerServicioDashboards(): ServicioDashboards {
-  const g = globalThis as unknown as Record<symbol, ServicioDashboards>;
-  if (!g[CLAVE]) {
+/**
+ * Servicio segun el entorno: con PERSISTENCIA=drizzle lee ejecuciones, presupuestos, tareas,
+ * aprobaciones y organizacion de Postgres; si no, lectores en memoria con la semilla de demo.
+ */
+export function crearServicioDashboards(opciones: OpcionesFabrica = {}): ServicioDashboards {
+  if (modoPersistencia(opciones.env) === "drizzle") {
+    const db = baseDatosDe(opciones);
+    return new ServicioDashboards({
+      ejecuciones: new LectorEjecucionesDrizzle(db),
+      presupuestos: new LectorPresupuestosDrizzle(db),
+      tareas: new LectorTareasDrizzle(db),
+      aprobaciones: new LectorAprobacionesDrizzle(db),
+      organizaciones: new LectorOrganizacionesDrizzle(db),
+    });
+  }
+  {
     const ejecuciones = new EjecucionesMemoriaRepo();
     const presupuestos = new PresupuestosMemoriaRepo();
     const tareas = new TareasMemoriaRepo();
@@ -148,7 +167,7 @@ export function obtenerServicioDashboards(): ServicioDashboards {
       },
     ]);
 
-    g[CLAVE] = new ServicioDashboards({
+    return new ServicioDashboards({
       ejecuciones,
       presupuestos,
       tareas,
@@ -156,5 +175,9 @@ export function obtenerServicioDashboards(): ServicioDashboards {
       organizaciones,
     });
   }
-  return g[CLAVE];
+}
+
+/** Servicio compartido del proceso (en Vercel exige PERSISTENCIA=drizzle). */
+export function obtenerServicioDashboards(): ServicioDashboards {
+  return unicoPorProceso("servicioDashboards", () => crearServicioDashboards());
 }

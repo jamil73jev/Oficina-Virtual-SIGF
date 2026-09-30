@@ -3,6 +3,7 @@ import type { ProveedorIdentidad } from "@/core/approvals";
 import { Auditor, AuditoriaMemoriaRepo } from "@/core/audit";
 import { PresupuestoMemoriaRepo, ServicioPresupuesto } from "@/core/budget";
 import { can } from "@/core/rbac";
+import { exigirAlojamientoPermitido, exigirFuentePermitida, obtenerConfiguracionDatos } from "@/core/datos";
 import {
   esIdAgenteArea,
   ejecutarAgenteArea,
@@ -11,7 +12,8 @@ import {
   type FuenteDatos,
   type IdAgenteArea,
 } from "@/modules/agentes-area";
-import { crearModeloDesdeEntorno, type ModeloOllama } from "@/orchestration/runtime/ollama";
+import type { ModeloLenguaje } from "@/orchestration/runtime/modelo";
+import { crearModeloDesdeEntorno, ModeloOllama } from "@/orchestration/runtime/ollama";
 
 const AMPLIO = { tokens: 1_000_000, costo: 10_000, iteraciones: 1_000 };
 const IdAgente = z.string().trim().min(1).max(64).regex(/^[a-z-]+$/);
@@ -29,10 +31,14 @@ export async function ejecutarConsultaLocal(input: {
   orgId: string;
   proyectoId: string;
   pregunta: string;
-  modelo: ModeloOllama;
+  modelo: ModeloLenguaje;
   fuente?: FuenteDatos;
   locale?: "es" | "en";
 }) {
+  const configuracion = obtenerConfiguracionDatos();
+  const fuente = input.fuente ?? fuenteSintetica();
+  exigirFuentePermitida(configuracion, fuente.tipo);
+  exigirAlojamientoPermitido(configuracion, input.modelo.alojamiento);
   const repo = new PresupuestoMemoriaRepo();
   sembrarPresupuestosArea(repo, {
     orgId: input.orgId,
@@ -45,7 +51,7 @@ export async function ejecutarConsultaLocal(input: {
       modelo: input.modelo,
       auditor: new Auditor(new AuditoriaMemoriaRepo()),
       presupuesto: new ServicioPresupuesto(repo),
-      fuente: input.fuente ?? fuenteSintetica(),
+      fuente,
     },
     {
       orgId: input.orgId,
@@ -57,21 +63,32 @@ export async function ejecutarConsultaLocal(input: {
   );
 }
 
-type CrearModelo = () => ModeloOllama | null;
+type CrearModelo = () => ModeloLenguaje | null;
+
+const disponible = (modelo: ModeloLenguaje) =>
+  modelo instanceof ModeloOllama ? modelo.disponible() : Promise.resolve(true);
+
+const nombreModelo = (modelo: ModeloLenguaje) =>
+  modelo instanceof ModeloOllama ? modelo.nombreModelo : modelo.id;
 
 export function crearManejadorEstadoModeloLocal(
   crearModelo: CrearModelo = () => crearModeloDesdeEntorno(),
 ) {
   return async (): Promise<Response> => {
-    let modelo: ModeloOllama | null;
+    let modelo: ModeloLenguaje | null;
     try {
       modelo = crearModelo();
     } catch {
       return json({ configurado: false, disponible: false, modelo: null }, 200);
     }
     if (!modelo) return json({ configurado: false, disponible: false, modelo: null }, 200);
-    const disponible = await modelo.disponible();
-    return json({ configurado: true, disponible, modelo: modelo.nombreModelo }, 200);
+    const estaDisponible = await disponible(modelo);
+    return json({
+      configurado: true,
+      disponible: estaDisponible,
+      modelo: nombreModelo(modelo),
+      ...(modelo.alojamiento === "nube" ? { alojamiento: "nube", soloDatosSinteticos: true } : {}),
+    }, 200);
   };
 }
 
@@ -101,10 +118,10 @@ export function crearManejadorConsultaLocal({
     const entrada = CuerpoConsulta.safeParse(cuerpo);
     if (!entrada.success) return json({ error: "cuerpo_invalido" }, 400);
 
-    let modelo: ModeloOllama | null;
+    let modelo: ModeloLenguaje | null;
     try { modelo = crearModelo(); } catch { modelo = null; }
     if (!modelo) return json({ error: "modelo_local_no_configurado" }, 503);
-    if (!(await modelo.disponible())) return json({ error: "modelo_local_no_disponible" }, 503);
+    if (!(await disponible(modelo))) return json({ error: "modelo_local_no_disponible" }, 503);
 
     try {
       const resultado = await ejecutar({

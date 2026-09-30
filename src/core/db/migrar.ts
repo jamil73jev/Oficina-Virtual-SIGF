@@ -10,8 +10,10 @@ const CARPETA_SQL = fileURLToPath(new URL("./sql", import.meta.url));
 
 /**
  * SQL escrito a mano que se aplica tras las migraciones de drizzle-kit, en orden:
- * 0001 endurece auditoria (rol app_rw, REVOKE, triggers, advisory lock, RLS) y 0002
- * concede el minimo privilegio a app_rw. Ambos son idempotentes.
+ * 0001 endurece auditoria (rol app_rw, REVOKE, triggers, advisory lock, RLS), 0002
+ * concede el minimo privilegio a app_rw y 0003 extiende RLS por org_id y los permisos a las
+ * tablas de la persistencia (proyectos, documentos, ejecuciones, operaciones y traza).
+ * Todos son idempotentes.
  */
 export async function leerSqlEndurecimiento(): Promise<{ nombre: string; sql: string }[]> {
   const nombres = (await readdir(CARPETA_SQL)).filter((n) => n.endsWith(".sql")).sort();

@@ -1,10 +1,10 @@
-import { identidadPendiente } from "@/core/approvals";
+import { conAutenticacion, obtenerProveedorIdentidad } from "@/core/auth";
 import { crearManejadoresOperaciones, obtenerServicioOperaciones } from "@/modules/operaciones";
 
-export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const GET = conAutenticacion(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { id } = await ctx.params;
   return crearManejadoresOperaciones({
     servicio: obtenerServicioOperaciones(),
-    identidad: identidadPendiente,
+    identidad: obtenerProveedorIdentidad(),
   }).eventos(req, id);
-}
+});

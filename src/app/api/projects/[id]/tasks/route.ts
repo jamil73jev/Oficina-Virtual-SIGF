@@ -1,13 +1,13 @@
-import { identidadPendiente } from "@/core/approvals";
+import { conAutenticacion, obtenerProveedorIdentidad } from "@/core/auth";
 import { crearManejadoresProyectos, obtenerServicioProyectos } from "@/modules/proyectos";
 
 const m = () =>
   crearManejadoresProyectos({
     servicio: obtenerServicioProyectos(),
-    identidad: identidadPendiente,
+    identidad: obtenerProveedorIdentidad(),
   });
 
-export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const POST = conAutenticacion(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { id } = await ctx.params;
   return m().crearTarea(req, id);
-}
+});

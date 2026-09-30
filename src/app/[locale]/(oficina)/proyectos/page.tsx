@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { isLocale } from "@/core/i18n/config";
 import { TableroProyectos } from "@/modules/proyectos/TableroProyectos";
+import { exigirIdentidadPagina } from "@/core/auth/pagina";
 
 export default async function ProyectosPage({
   params,
@@ -12,6 +13,7 @@ export default async function ProyectosPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   setRequestLocale(locale);
+  await exigirIdentidadPagina(locale);
   const t = await getTranslations({ locale, namespace: "projects" });
 
   return (

@@ -20,6 +20,11 @@ const paths = [
   "/en/agentes",
   "/es/operaciones",
   "/en/operaciones",
+  "/es/login",
+  "/en/login",
+  // Sin sesion, las rutas protegidas de MFA redirigen al login; axe audita el destino final.
+  "/es/seguridad/mfa",
+  "/en/seguridad/mfa",
 ];
 // Clave de src/components/theme/tema.ts (CLAVE_TEMA): el script previo al pintado lee light o dark.
 const CLAVE_TEMA = "ov-theme";

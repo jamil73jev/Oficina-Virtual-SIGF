@@ -44,6 +44,12 @@ export interface DatosPortada {
 }
 
 export interface DepsPortada {
+  /**
+   * Identidad con la que se cargan los datos. Sin deps se usa la identidad REAL de la sesion
+   * (redirige al login si no hay). Con deps inyectadas y sin ctx se usa un contexto vacio sin
+   * organizacion, que los servicios reales rechazan (org_invalida): nunca una org fija.
+   */
+  ctx?: ContextoAcceso;
   aprobaciones: { listarPendientes(orgId: string): Promise<Array<{ tipo: string; expiraEn: Date }>> };
   dashboards: {
     obtenerResumen(
@@ -54,13 +60,13 @@ export interface DepsPortada {
   };
 }
 
-// Organización y lector de demostración, igual que la página de costos (sin autenticación real aún).
-const ORG_DEMO = "00000000-0000-4000-8000-000000000001";
-const CTX_DEMO: ContextoAcceso = {
-  usuarioId: "00000000-0000-4000-8000-000000000002",
-  orgId: ORG_DEMO,
-  rol: "viewer",
-};
+const CTX_SIN_ORG: ContextoAcceso = { usuarioId: "", orgId: "", rol: "viewer" };
+
+/** Identidad real de la sesion (import perezoso: next/headers solo en el servidor de Next). */
+async function identidadDeSesion(locale: Locale): Promise<ContextoAcceso> {
+  const { exigirIdentidadPagina } = await import("@/core/auth/pagina");
+  return (await exigirIdentidadPagina(locale)).ctx;
+}
 
 async function seccion<T>(cargar: () => Promise<T>): Promise<Seccion<T>> {
   try {
@@ -95,18 +101,21 @@ export function resumirCostos(resumen: ResumenDashboard): DatosCostos {
 export async function cargarPortada(locale: Locale, deps?: DepsPortada): Promise<DatosPortada> {
   // Los servicios se obtienen dentro de cada seccion: si construirlos falla (p. ej. falta
   // AUDIT_HMAC_KEY en produccion) solo esa tarjeta muestra el estado de error.
+  // La identidad se resuelve FUERA de las secciones: una redireccion al login no debe
+  // quedar atrapada como "error de seccion".
+  const ctx = deps ? (deps.ctx ?? CTX_SIN_ORG) : await identidadDeSesion(locale);
   const aprobacionesSrv = () => deps?.aprobaciones ?? obtenerServicioAprobaciones();
   const dashboardsSrv = () => deps?.dashboards ?? obtenerServicioDashboards();
   const [aprobaciones, resumen] = await Promise.all([
     seccion<DatosAprobaciones>(async () => {
-      const pendientes = await aprobacionesSrv().listarPendientes(ORG_DEMO);
+      const pendientes = await aprobacionesSrv().listarPendientes(ctx.orgId);
       const primera = pendientes[0];
       return {
         pendientes: pendientes.length,
         proxima: primera ? { tipo: primera.tipo, expiraEn: primera.expiraEn.toISOString() } : null,
       };
     }),
-    seccion(() => dashboardsSrv().obtenerResumen(CTX_DEMO, undefined, { locale })),
+    seccion(() => dashboardsSrv().obtenerResumen(ctx, undefined, { locale })),
   ]);
   return {
     aprobaciones,

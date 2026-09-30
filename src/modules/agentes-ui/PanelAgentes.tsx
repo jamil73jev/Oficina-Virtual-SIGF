@@ -88,7 +88,7 @@ export function PanelAgentes({ agentes, locale }: { agentes: readonly AgenteArea
   const t = mensajesAgentes[locale];
   const [estados, setEstados] = useState<Record<string, Estado>>({});
   const [preguntas, setPreguntas] = useState<Record<string, string>>({});
-  const [modeloLocal, setModeloLocal] = useState<{ comprobando: boolean; disponible: boolean; nombre: string | null }>({
+  const [modeloLocal, setModeloLocal] = useState<{ comprobando: boolean; disponible: boolean; nombre: string | null; alojamiento?: "local" | "nube" }>({
     comprobando: true,
     disponible: false,
     nombre: null,
@@ -97,9 +97,9 @@ export function PanelAgentes({ agentes, locale }: { agentes: readonly AgenteArea
   useEffect(() => {
     let activo = true;
     void fetch("/api/agents/modelo-local", { cache: "no-store" })
-      .then(async (respuesta) => respuesta.json() as Promise<{ disponible?: boolean; modelo?: string | null }>)
+      .then(async (respuesta) => respuesta.json() as Promise<{ disponible?: boolean; modelo?: string | null; alojamiento?: "local" | "nube" }>)
       .then((estado) => {
-        if (activo) setModeloLocal({ comprobando: false, disponible: estado.disponible === true, nombre: estado.modelo ?? null });
+        if (activo) setModeloLocal({ comprobando: false, disponible: estado.disponible === true, nombre: estado.modelo ?? null, alojamiento: estado.alojamiento });
       })
       .catch(() => {
         if (activo) setModeloLocal({ comprobando: false, disponible: false, nombre: null });
@@ -176,7 +176,9 @@ export function PanelAgentes({ agentes, locale }: { agentes: readonly AgenteArea
           {modeloLocal.comprobando
             ? t.verificandoModeloLocal
             : modeloLocal.disponible
-              ? t.modeloLocalDisponible.replace("{modelo}", modeloLocal.nombre ?? "Ollama")
+              ? modeloLocal.alojamiento === "nube"
+                ? t.modeloNubeDisponible.replace("{modelo}", modeloLocal.nombre ?? "AI Gateway")
+                : t.modeloLocalDisponible.replace("{modelo}", modeloLocal.nombre ?? "Ollama")
               : t.modeloLocalNoDisponible}
         </p>
         <p className="mt-1 text-sm text-muted">{t.avisoLentitud}</p>

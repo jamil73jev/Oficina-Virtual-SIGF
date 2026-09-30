@@ -101,6 +101,7 @@ export class ModeloAiSdk implements ModeloLenguaje {
     readonly id = "ai-sdk",
     /** Por defecto nube (Gateway); indicar "local" solo para un modelo en infraestructura propia. */
     readonly alojamiento: Alojamiento = "nube",
+    private readonly maxRetries = 2,
   ) {}
 
   async generarTexto(p: PeticionTexto): Promise<PasoModelo> {
@@ -108,6 +109,7 @@ export class ModeloAiSdk implements ModeloLenguaje {
       model: this.modelo,
       system: p.sistema,
       messages: aMensajesAiSdk(p.mensajes),
+      maxRetries: this.maxRetries,
     });
     const u = uso(r.usage);
     try {
@@ -132,6 +134,7 @@ export class ModeloAiSdk implements ModeloLenguaje {
       system: p.sistema,
       prompt: p.entrada,
       output: Output.object({ schema: p.esquema }),
+      maxRetries: this.maxRetries,
     });
     return { objeto: p.esquema.parse(r.output), uso: uso(r.usage) };
   }

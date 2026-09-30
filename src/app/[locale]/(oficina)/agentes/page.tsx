@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { isLocale, locales } from "@/core/i18n/config";
 import { AGENTES_AREA } from "@/modules/agentes-area";
 import { mensajesAgentes, PanelAgentes, type LocaleAgentes } from "@/modules/agentes-ui";
+import { exigirIdentidadPagina } from "@/core/auth/pagina";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -20,6 +21,7 @@ export default async function AgentesPage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   if (!isLocale(locale) || !(locale in mensajesAgentes)) notFound();
   setRequestLocale(locale);
+  await exigirIdentidadPagina(locale);
   const idioma = locale as LocaleAgentes;
   const t = mensajesAgentes[idioma];
 

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { unicoPorProceso } from "@/core/db/entorno";
 import { EventoTraza, type PublicadorTraza } from "./eventos";
 
 type Oyente = (evento: EventoTraza) => void;
@@ -122,11 +123,10 @@ export class PublicadorTrazaMemoria implements PublicadorTraza {
   }
 }
 
-const CLAVE = Symbol.for("oficina-virtual.publicadorTraza");
-
-/** Publicador compartido del proceso (memoria hoy; Postgres y Realtime en la ola B). */
+/**
+ * Publicador en memoria compartido del proceso (desarrollo y pruebas). La seleccion por
+ * entorno (Postgres con PERSISTENCIA=drizzle) esta en ./fabrica (obtenerPublicadorTrazaEntorno).
+ */
 export function obtenerPublicadorTraza(): PublicadorTrazaMemoria {
-  const g = globalThis as unknown as Record<symbol, PublicadorTrazaMemoria>;
-  g[CLAVE] ??= new PublicadorTrazaMemoria();
-  return g[CLAVE];
+  return unicoPorProceso("publicadorTraza", () => new PublicadorTrazaMemoria());
 }

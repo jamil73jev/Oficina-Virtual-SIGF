@@ -11,13 +11,17 @@
     "test": "vitest run",
     "audit:a11y": "node scripts/audit-a11y.mjs",
     "audit:perf": "node scripts/audit-perf.mjs",
-    "db:generate": "drizzle-kit generate --dialect postgresql --schema ./src/core/db/schema.ts --out ./src/core/db/migrations"
+    "db:generate": "drizzle-kit generate --dialect postgresql --schema ./src/core/db/schema.ts --out ./src/core/db/migrations",
+    "db:migrar": "node scripts/migrar.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
     "ai": "^7.0.122",
     "drizzle-orm": "^0.45.3",
     "next": "16.3.6",
     "next-intl": "^4.14.7",
+    "postgres": "^3.4.9",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "^4.6.5"
