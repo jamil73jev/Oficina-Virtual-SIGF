@@ -20,9 +20,12 @@ export class ModeloNoPermitidoError extends Error {
  *
  * Inventario de llamadas directas al puerto ModeloLenguaje (verificado con Grep de
  * `.generarTexto(` / `.generarObjeto(` en src, excluyendo tests y el adaptador):
- *  - runtime/agent-runtime.ts  -> generarTexto   (protegido con esta funcion)
- *  - orchestrator/index.ts     -> generarObjeto  (protegido con esta funcion)
- *  - subagents/index.ts        -> no llama al modelo; delega en AgentRuntime (protegido)
+ *  - runtime/agent-runtime.ts        -> generarTexto   (protegido con esta funcion)
+ *  - orchestrator/index.ts           -> generarObjeto  (protegido con esta funcion)
+ *  - modules/operaciones/servicio.ts -> generarObjeto (plan del Director) y generarTexto
+ *                                       (comentario de cada paso); cada una precedida de esta funcion
+ *  - modules/agentes-area/ejecutar.ts -> generarTexto (comentario de la consulta), protegido
+ *  - subagents/index.ts              -> no llama al modelo; delega en AgentRuntime (protegido)
  * Toda llamada nueva al modelo debe pasar por aqui.
  */
 export async function exigirModeloPermitido(

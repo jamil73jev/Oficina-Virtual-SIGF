@@ -2,11 +2,12 @@ import { z } from "zod";
 import type { ProveedorIdentidad } from "@/core/approvals";
 import { can, type Accion, type ContextoAcceso } from "@/core/rbac";
 import { NOMBRE_EVENTO_SSE, type EventoTraza } from "@/orchestration/traza/eventos";
-import { EntradaOperacion, type ProgramarTrabajo, type ServicioOperaciones } from "./servicio";
+import { EntradaOperacion, eventoParaSse, type ProgramarTrabajo, type ServicioOperaciones } from "./servicio";
 
 const IdOperacion = z.uuid();
 /** Last-Event-ID / desde: la secuencia del ultimo evento recibido (0 = todos). */
 const Desde = z.coerce.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
+const Secuencia = z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 
 export const KEEPALIVE_MS = 15_000;
 
@@ -75,9 +76,37 @@ export function crearManejadoresOperaciones({ servicio, identidad, programar, ke
     async obtener(req: Request, idCrudo: string): Promise<Response> {
       const r = await operacionLegible(req, idCrudo);
       if (r instanceof Response) return r;
-      const instantanea = await servicio.obtenerInstantanea(r.ctx.orgId, r.operacionId);
+      const completa = new URL(req.url).searchParams.get("completa") === "1";
+      const instantanea = await servicio.obtenerInstantanea(r.ctx.orgId, r.operacionId, completa);
       if (!instantanea) return error(404, "no_encontrada");
       return json(instantanea, 200);
+    },
+
+    /** GET /api/operaciones/[id]/eventos/[secuencia]: evento persistido completo. */
+    async evento(req: Request, idCrudo: string, secuenciaCruda: string): Promise<Response> {
+      const r = await operacionLegible(req, idCrudo);
+      if (r instanceof Response) return r;
+      const secuencia = Secuencia.safeParse(secuenciaCruda);
+      if (!secuencia.success) return error(404, "no_encontrada");
+      const evento = await servicio.obtenerEvento(r.ctx.orgId, r.operacionId, secuencia.data);
+      return evento ? json(evento, 200) : error(404, "no_encontrada");
+    },
+
+    /** GET /api/operaciones/[id]/entregable: Markdown completo bajo demanda. */
+    async entregable(req: Request, idCrudo: string): Promise<Response> {
+      const r = await operacionLegible(req, idCrudo);
+      if (r instanceof Response) return r;
+      const markdown = await servicio.obtenerEntregable(r.ctx.orgId, r.operacionId);
+      if (markdown === null) return error(404, "no_encontrada");
+      const descargar = new URL(req.url).searchParams.get("descargar") === "1";
+      return new Response(markdown, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/markdown; charset=utf-8",
+          "Cache-Control": "no-store",
+          ...(descargar ? { "Content-Disposition": 'attachment; filename="entregable.md"' } : {}),
+        },
+      });
     },
 
     /**
@@ -137,7 +166,7 @@ export function crearManejadoresOperaciones({ servicio, identidad, programar, ke
           const entregar = (evento: EventoTraza) => {
             if (cerrado || evento.secuencia <= ultima) return;
             ultima = evento.secuencia;
-            enviar(marcoSse(evento));
+            enviar(marcoSse(eventoParaSse(evento)));
             if (evento.tipo === "operacion_finalizada") cerrar();
           };
           // Se suscribe ANTES de leer lo publicado y retiene lo que llegue mientras tanto: sin huecos.

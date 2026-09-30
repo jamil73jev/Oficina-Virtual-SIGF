@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import type { EventoTraza } from "@/orchestration/traza/eventos";
 import { bloquesRespuesta } from "@/modules/agentes-ui/presentacion";
 import { tablaACsv, type TablaHerramienta } from "@/modules/agentes-area/tablas";
 import { mensajesOperaciones, type IdiomaOperaciones } from "./mensajes";
+import { cargarEntregableOperacion, cargarEventoOperacion } from "./conexion";
 
 interface TablaEvento {
   titulo: string;
@@ -84,20 +86,63 @@ function Tabla({ tabla, idioma }: { tabla: TablaEvento; idioma: IdiomaOperacione
   </section>;
 }
 
-export function ResultadosOperacion({ eventos, idioma }: { eventos: readonly EventoTraza[]; idioma: IdiomaOperaciones }) {
+export function ResultadosOperacion({ eventos, idioma, operacionId }: { eventos: readonly EventoTraza[]; idioma: IdiomaOperaciones; operacionId?: string }) {
   const t = mensajesOperaciones[idioma];
-  const tablas = tablasDeEventos(eventos);
+  const [detalles, setDetalles] = useState<Record<number, EventoTraza>>({});
+  const [cargandoTablas, setCargandoTablas] = useState(false);
+  const [errorTablas, setErrorTablas] = useState(false);
+  const [markdown, setMarkdown] = useState<string | null>(null);
+  const [mostrarEntregable, setMostrarEntregable] = useState(false);
+  const [cargandoEntregable, setCargandoEntregable] = useState(false);
+  const [errorEntregable, setErrorEntregable] = useState(false);
+  const eventosResueltos = useMemo(() => eventos.map((evento) => detalles[evento.secuencia] ?? evento), [eventos, detalles]);
+  const pendientes = useMemo(
+    () => eventos.filter((evento) => evento.tipo === "tabla" && evento.detalle?.ligero === true && !detalles[evento.secuencia]),
+    [eventos, detalles],
+  );
+  useEffect(() => {
+    if (!operacionId || pendientes.length === 0) return;
+    let activo = true;
+    void Promise.resolve().then(() => {
+      if (activo) { setCargandoTablas(true); setErrorTablas(false); }
+    });
+    void Promise.all(pendientes.map((evento) => cargarEventoOperacion(operacionId, evento.secuencia))).then((cargados) => {
+      if (!activo) return;
+      setDetalles((actual) => ({ ...actual, ...Object.fromEntries(cargados.map((evento) => [evento.secuencia, evento])) }));
+    }).catch(() => { if (activo) setErrorTablas(true); }).finally(() => { if (activo) setCargandoTablas(false); });
+    return () => { activo = false; };
+  }, [operacionId, pendientes]);
+  const tablas = tablasDeEventos(eventosResueltos);
   const comentarios = eventos.filter((evento) => evento.tipo === "comentario");
-  const entregable = entregableDeEventos(eventos);
+  const entregable = markdown ?? entregableDeEventos(eventosResueltos);
   const noVerificadas = eventos.filter((evento) => evento.tipo !== "comentario").flatMap(cifrasNoVerificadasDe);
-  const descargar = () => {
-    if (!entregable) return;
-    const url = URL.createObjectURL(new Blob([entregable], { type: "text/markdown;charset=utf-8" }));
+  const cargarEntregable = async () => {
+    if (entregable) return entregable;
+    if (!operacionId) return null;
+    setCargandoEntregable(true);
+    setErrorEntregable(false);
+    try {
+      const contenido = await cargarEntregableOperacion(operacionId);
+      setMarkdown(contenido);
+      return contenido;
+    } catch {
+      setErrorEntregable(true);
+      return null;
+    } finally {
+      setCargandoEntregable(false);
+    }
+  };
+  const descargar = async () => {
+    const contenido = await cargarEntregable();
+    if (!contenido) return;
+    const url = URL.createObjectURL(new Blob([contenido], { type: "text/markdown;charset=utf-8" }));
     const enlace = document.createElement("a"); enlace.href = url; enlace.download = "entregable.md"; enlace.click(); URL.revokeObjectURL(url);
   };
   return <section className="rounded-lg border border-subtle bg-raised p-4" aria-labelledby="titulo-resultados">
     <h2 id="titulo-resultados" className="mb-3 text-lg font-semibold">{t.resultados}</h2>
-    {tablas.length === 0 && comentarios.length === 0 && !entregable ? <p className="text-muted">{t.sinResultados}</p> : <div className="space-y-4">
+    {tablas.length === 0 && comentarios.length === 0 && !eventos.some((evento) => evento.tipo === "entregable") && pendientes.length === 0 ? <p className="text-muted">{t.sinResultados}</p> : <div className="space-y-4">
+      {(cargandoTablas || (pendientes.length > 0 && !errorTablas)) && <p role="status" aria-live="polite">{t.cargandoTablas}</p>}
+      {errorTablas && <p role="alert" className="text-danger">{t.errorTablas}</p>}
       {tablas.map((tabla, indice) => <Tabla key={`${tabla.titulo}-${indice}`} tabla={tabla} idioma={idioma} />)}
       {comentarios.map((evento) => <section key={evento.secuencia} aria-label={t.comentarioModelo} className="rounded-md border border-info bg-info-soft p-3">
         <h3 className="font-semibold">{t.comentarioModelo}</h3><p className="mb-2 text-sm">{t.comentarioAviso}</p>
@@ -105,7 +150,7 @@ export function ResultadosOperacion({ eventos, idioma }: { eventos: readonly Eve
         {cifrasNoVerificadasDe(evento).length > 0 && <aside role="alert" className="mt-3 rounded-md border border-warning bg-warning-soft p-3"><h4 className="font-semibold">{t.cifrasNoVerificadas}</h4><ul className="list-inside list-disc">{cifrasNoVerificadasDe(evento).map((cifra, i) => <li key={`${cifra}-${i}`}>{cifra}</li>)}</ul><p>{t.cifrasAviso}</p></aside>}
       </section>)}
       {noVerificadas.length > 0 && <aside role="alert" className="rounded-md border border-warning bg-warning-soft p-3"><h3 className="font-semibold">{t.cifrasNoVerificadas}</h3><ul className="list-inside list-disc">{noVerificadas.map((cifra, i) => <li key={`${cifra}-${i}`}>{cifra}</li>)}</ul><p>{t.cifrasAviso}</p></aside>}
-      {entregable && <div><button type="button" onClick={descargar} className="min-h-11 rounded-md border border-primary bg-primary px-4 font-semibold text-primary-fg hover:bg-primary-hover">{t.descargar}</button><pre className="mt-3 overflow-auto whitespace-pre-wrap rounded-md bg-surface p-3 text-sm">{entregable}</pre></div>}
+      {eventos.some((evento) => evento.tipo === "entregable") && <div className="space-x-2"><button type="button" onClick={() => { void cargarEntregable().then((contenido) => { if (contenido) setMostrarEntregable(true); }); }} disabled={cargandoEntregable} className="min-h-11 rounded-md border border-primary px-4 font-semibold">{cargandoEntregable ? t.cargandoEntregable : t.verEntregable}</button><button type="button" onClick={() => { void descargar(); }} disabled={cargandoEntregable} className="min-h-11 rounded-md border border-primary bg-primary px-4 font-semibold text-primary-fg hover:bg-primary-hover">{t.descargar}</button>{errorEntregable && <p role="alert" className="mt-2 text-danger">{t.errorEntregable}</p>}{mostrarEntregable && entregable && <pre className="mt-3 overflow-auto whitespace-pre-wrap rounded-md bg-surface p-3 text-sm">{entregable}</pre>}</div>}
     </div>}
   </section>;
 }

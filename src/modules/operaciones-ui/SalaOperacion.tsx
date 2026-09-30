@@ -31,6 +31,6 @@ export function SalaOperacion({ operacionId, idioma, agentes }: { operacionId: s
     ].map(([etiqueta, valor]) => <div key={String(etiqueta)} className="rounded-lg border border-subtle bg-raised p-4"><dt className="text-sm text-muted">{etiqueta}</dt><dd className="mt-1 text-xl font-semibold tabular-nums">{valor}</dd></div>)}</dl>
     {avisoParcial && <aside role="status" className="rounded-lg border border-warning bg-warning-soft p-4 font-semibold text-warning">{avisoParcial}</aside>}
     <GrafoOperacion eventos={vista.eventos} idioma={idioma} agentes={agentes} />
-    <div className="grid items-start gap-5 xl:grid-cols-[minmax(20rem,0.8fr)_minmax(30rem,1.2fr)]"><LineaTiempo eventos={vista.eventos} idioma={idioma} agentes={agentes} /><ResultadosOperacion eventos={vista.eventos} idioma={idioma} /></div>
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(20rem,0.8fr)_minmax(30rem,1.2fr)]"><LineaTiempo eventos={vista.eventos} idioma={idioma} agentes={agentes} /><ResultadosOperacion eventos={vista.eventos} idioma={idioma} operacionId={operacionId} /></div>
   </main>;
 }

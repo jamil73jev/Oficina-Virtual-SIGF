@@ -25,6 +25,18 @@ export interface DependenciasConexion {
 
 const fuenteNativa = (url: string): EventSourceOperacion => new EventSource(url) as EventSourceOperacion;
 
+export async function cargarEventoOperacion(operacionId: string, secuencia: number, fetcher: typeof fetch = fetch): Promise<EventoTraza> {
+  const respuesta = await fetcher(`/api/operaciones/${encodeURIComponent(operacionId)}/eventos/${secuencia}`, { cache: "no-store" });
+  if (!respuesta.ok) throw new Error(`evento_${respuesta.status}`);
+  return EventoTraza.parse(await respuesta.json());
+}
+
+export async function cargarEntregableOperacion(operacionId: string, fetcher: typeof fetch = fetch): Promise<string> {
+  const respuesta = await fetcher(`/api/operaciones/${encodeURIComponent(operacionId)}/entregable`, { cache: "no-store" });
+  if (!respuesta.ok) throw new Error(`entregable_${respuesta.status}`);
+  return respuesta.text();
+}
+
 export class ConexionOperacion {
   private vista: VistaConexionOperacion = { ...estadoInicialOperacion, cargando: true, error: null, conexion: "reconectando" };
   private fuente: EventSourceOperacion | null = null;

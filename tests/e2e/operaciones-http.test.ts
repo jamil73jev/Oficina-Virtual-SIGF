@@ -121,6 +121,59 @@ describe("GET /api/operaciones/[id]", { timeout: LENTO }, () => {
     const inexistente = "99999999-9999-4999-8999-999999999999";
     expect((await m.h.obtener(m.get(inexistente, "owner"), inexistente)).status).toBe(404);
   });
+
+  it("entrega por defecto una instantanea ligera menor de 60 KB y conserva la completa con ?completa=1", async () => {
+    const m = montarHttp();
+    const operacionId = await m.crear();
+    await m.servicio.esperar(ORG_A, operacionId);
+    const ligeraRespuesta = await m.h.obtener(m.get(operacionId, "viewer"), operacionId);
+    const completaRespuesta = await m.h.obtener(m.get(`${operacionId}?completa=1`, "viewer"), operacionId);
+    const ligera = InstantaneaOperacion.parse(await ligeraRespuesta.json());
+    const completa = InstantaneaOperacion.parse(await completaRespuesta.json());
+    const bytesLigera = new TextEncoder().encode(JSON.stringify(ligera)).byteLength;
+    const bytesCompleta = new TextEncoder().encode(JSON.stringify(completa)).byteLength;
+    expect(bytesLigera).toBeLessThan(60 * 1024);
+    expect(ligera.eventos).toHaveLength(completa.eventos.length);
+    expect(bytesCompleta).toBeGreaterThan(bytesLigera);
+    const tablaLigera = ligera.eventos.find((evento) => evento.tipo === "tabla")!;
+    expect(tablaLigera.detalle).toMatchObject({ ligero: true, referencia: expect.any(String) });
+    expect((tablaLigera.detalle?.tablas as Array<Record<string, unknown>>)[0]).not.toHaveProperty("filas");
+    const entregableLigero = ligera.eventos.find((evento) => evento.tipo === "entregable")!;
+    expect(entregableLigero.detalle).toMatchObject({ ligero: true, tamanoBytes: expect.any(Number), lineas: expect.any(Number) });
+  });
+});
+
+describe("detalle pesado bajo demanda", { timeout: LENTO }, () => {
+  it("devuelve el evento completo y el entregable Markdown exacto", async () => {
+    const m = montarHttp();
+    const operacionId = await m.crear();
+    await m.servicio.esperar(ORG_A, operacionId);
+    const completos = await m.publicador.listar(ORG_A, operacionId);
+    const tabla = completos.find((evento) => evento.tipo === "tabla")!;
+    const evento = await m.h.evento(m.get(`${operacionId}/eventos/${tabla.secuencia}`, "viewer"), operacionId, String(tabla.secuencia));
+    expect(EventoTraza.parse(await evento.json())).toEqual(tabla);
+    const original = completos.find((item) => item.tipo === "entregable")?.detalle?.markdown;
+    const entregable = await m.h.entregable(m.get(`${operacionId}/entregable?descargar=1`, "viewer"), operacionId);
+    expect(entregable.headers.get("content-type")).toMatch(/^text\/markdown/);
+    expect(entregable.headers.get("content-disposition")).toContain("entregable.md");
+    expect(await entregable.text()).toBe(original);
+  });
+
+  it("aplica identidad, permiso, aislamiento y 404 a ambas lecturas", async () => {
+    const m = montarHttp({ programar: () => {} });
+    const operacionId = await m.crear();
+    const rutas = [
+      () => m.h.evento(m.get(`${operacionId}/eventos/1`, null), operacionId, "1"),
+      () => m.h.entregable(m.get(`${operacionId}/entregable`, null), operacionId),
+    ];
+    for (const pedir of rutas) expect((await pedir()).status).toBe(401);
+    expect((await m.h.evento(m.get(`${operacionId}/eventos/1`, "invalido" as RolUsuario), operacionId, "1")).status).toBe(403);
+    expect((await m.h.entregable(m.get(`${operacionId}/entregable`, "invalido" as RolUsuario), operacionId)).status).toBe(403);
+    expect((await m.h.evento(m.get(`${operacionId}/eventos/1`, "owner", ORG_B), operacionId, "1")).status).toBe(404);
+    expect((await m.h.entregable(m.get(`${operacionId}/entregable`, "owner", ORG_B), operacionId)).status).toBe(404);
+    expect((await m.h.evento(m.get(`${operacionId}/eventos/999`, "viewer"), operacionId, "999")).status).toBe(404);
+    expect((await m.h.entregable(m.get(`${operacionId}/entregable`, "viewer"), operacionId)).status).toBe(404);
+  });
 });
 
 describe("GET /api/operaciones/[id]/eventos (SSE)", { timeout: LENTO }, () => {
@@ -263,11 +316,15 @@ describe("rutas de Next cableadas", { timeout: LENTO }, () => {
       const { POST } = await import("@/app/api/operaciones/route");
       const { GET: obtener } = await import("@/app/api/operaciones/[id]/route");
       const { GET: eventos } = await import("@/app/api/operaciones/[id]/eventos/route");
+      const { GET: evento } = await import("@/app/api/operaciones/[id]/eventos/[secuencia]/route");
+      const { GET: entregable } = await import("@/app/api/operaciones/[id]/entregable/route");
       const id = "99999999-9999-4999-8999-999999999999";
       const params = { params: Promise.resolve({ id }) };
       expect((await POST(post({ texto: "hola" }))).status).toBe(401);
       expect((await obtener(new Request(`${BASE}/${id}`), params)).status).toBe(401);
       expect((await eventos(new Request(`${BASE}/${id}/eventos`), params)).status).toBe(401);
+      expect((await evento(new Request(`${BASE}/${id}/eventos/1`), { params: Promise.resolve({ id, secuencia: "1" }) })).status).toBe(401);
+      expect((await entregable(new Request(`${BASE}/${id}/entregable`), params)).status).toBe(401);
     } finally {
       if (anterior !== undefined) process.env.APPROVALS_DEV_IDENTITY = anterior;
     }

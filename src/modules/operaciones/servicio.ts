@@ -56,6 +56,7 @@ export const PROYECTO_OPERACIONES = "00000000-0000-4000-8000-0000000000f1";
 /** Tope del resumen que viaja en un traspaso: nunca el historial completo. */
 export const MAX_RESUMEN_TRASPASO = 500;
 const MAX_PREGUNTA = 4000;
+export const MAX_EVENTO_SSE_BYTES = 64 * 1024;
 
 export const EntradaOperacion = z.strictObject({
   texto: z.string().trim().min(1).max(2000),
@@ -130,6 +131,59 @@ interface ResultadoPaso {
 }
 
 type NuevoEvento = Omit<EventoTraza, "id" | "secuencia" | "ts" | "orgId" | "operacionId">;
+
+const esObjeto = (valor: unknown): valor is Record<string, unknown> => Boolean(valor) && typeof valor === "object" && !Array.isArray(valor);
+
+/** Sustituye únicamente cargas pesadas; conserva identidad, secuencia y metadatos del evento. */
+export function aligerarEventoOperacion(evento: EventoTraza): EventoTraza {
+  if (evento.tipo === "tabla" && evento.detalle) {
+    const tablas = Array.isArray(evento.detalle.tablas) ? evento.detalle.tablas : evento.detalle.tabla ? [evento.detalle.tabla] : [];
+    const metadatos = tablas.filter(esObjeto).map((tabla) => {
+      const filas = Array.isArray(tabla.filas) ? tabla.filas.length : 0;
+      const filasTotales = typeof tabla.filasTotales === "number" ? tabla.filasTotales : filas;
+      return {
+        titulo: tabla.titulo,
+        columnas: tabla.columnas,
+        filasVisibles: filas,
+        filasTotales,
+        recortada: filas < filasTotales,
+        fuente: tabla.fuente,
+        formula: tabla.formula,
+        filtros: tabla.filtros,
+        corte: tabla.corte,
+      };
+    });
+    return {
+      ...evento,
+      detalle: {
+        herramienta: evento.detalle.herramienta,
+        tablas: metadatos,
+        resumen: evento.detalle.resumen,
+        referencia: `/api/operaciones/${evento.operacionId}/eventos/${evento.secuencia}`,
+        ligero: true,
+      },
+    };
+  }
+  if (evento.tipo === "entregable" && evento.detalle && typeof evento.detalle.markdown === "string") {
+    const markdown = evento.detalle.markdown;
+    return {
+      ...evento,
+      detalle: {
+        tamanoBytes: new TextEncoder().encode(markdown).byteLength,
+        lineas: markdown.split(/\r?\n/u).length,
+        referencia: `/api/operaciones/${evento.operacionId}/entregable`,
+        ligero: true,
+        resumen: evento.detalle.resumen,
+      },
+    };
+  }
+  return evento;
+}
+
+export const eventoParaSse = (evento: EventoTraza): EventoTraza =>
+  evento.tipo === "tabla" && new TextEncoder().encode(JSON.stringify(evento)).byteLength > MAX_EVENTO_SSE_BYTES
+    ? aligerarEventoOperacion(evento)
+    : evento;
 
 const TEXTOS = {
   es: {
@@ -353,7 +407,7 @@ export class ServicioOperaciones {
   }
 
   /** Instantanea (GET /api/operaciones/[id]); null si no existe o es de otra organizacion. */
-  async obtenerInstantanea(orgId: string, operacionId: string): Promise<InstantaneaOperacion | null> {
+  async obtenerInstantanea(orgId: string, operacionId: string, completa = true): Promise<InstantaneaOperacion | null> {
     const r = await this.repositorio.obtener(orgId, operacionId);
     if (!r) return null;
     return {
@@ -362,8 +416,18 @@ export class ServicioOperaciones {
       idioma: r.idioma,
       estado: r.estado,
       creadaEn: r.creadaEn,
-      eventos: await this.deps.publicador.listar(orgId, operacionId),
+      eventos: (await this.deps.publicador.listar(orgId, operacionId)).map((evento) => completa ? evento : aligerarEventoOperacion(evento)),
     };
+  }
+
+  async obtenerEvento(orgId: string, operacionId: string, secuencia: number): Promise<EventoTraza | null> {
+    if (!(await this.repositorio.obtener(orgId, operacionId))) return null;
+    return (await this.deps.publicador.listar(orgId, operacionId)).find((evento) => evento.secuencia === secuencia) ?? null;
+  }
+
+  async obtenerEntregable(orgId: string, operacionId: string): Promise<string | null> {
+    const evento = [...(await this.deps.publicador.listar(orgId, operacionId))].reverse().find((item) => item.tipo === "entregable");
+    return typeof evento?.detalle?.markdown === "string" ? evento.detalle.markdown : null;
   }
 
   /** Audita un acceso denegado (rutas). */

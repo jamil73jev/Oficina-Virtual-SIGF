@@ -3,6 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
   ConexionOperacion,
+  cargarEntregableOperacion,
+  cargarEventoOperacion,
   ResultadosOperacion,
   aplicarEvento,
   estadoInicialOperacion,
@@ -102,11 +104,27 @@ describe("resultados de operaciones", () => {
     const html = renderToStaticMarkup(React.createElement(ResultadosOperacion, { eventos, idioma: "es" }));
     expect(html).toContain("31.032,78");
     expect(html).toContain("SUM(saldo)");
-    expect(html).toContain("Entregable exacto");
+    expect(html).toContain("Ver entregable");
+    expect(html).not.toContain("Saldo validado.");
   });
 
   it("mantiene las mismas claves en ES y EN", () => {
     expect(Object.keys(mensajesOperaciones.es).sort()).toEqual(Object.keys(mensajesOperaciones.en).sort());
+  });
+
+  it("presenta carga perezosa accesible y propaga errores de red", async () => {
+    const ligera = evento(4, {
+      tipo: "tabla",
+      detalle: { ligero: true, referencia: `/api/operaciones/${OPERACION}/eventos/4`, tablas: [{ titulo: "Cartera", filasVisibles: 200, filasTotales: 1500 }] },
+    });
+    const entregaLigera = evento(5, { tipo: "entregable", detalle: { ligero: true, referencia: `/api/operaciones/${OPERACION}/entregable`, tamanoBytes: 1234, lineas: 20 } });
+    const html = renderToStaticMarkup(React.createElement(ResultadosOperacion, { eventos: [ligera, entregaLigera], idioma: "es", operacionId: OPERACION }));
+    expect(html).toContain("Cargando detalle de tablas");
+    expect(html).toContain('role="status"');
+    expect(html).toContain("Ver entregable");
+    const falla = async () => new Response("", { status: 503 });
+    await expect(cargarEventoOperacion(OPERACION, 4, falla)).rejects.toThrow("evento_503");
+    await expect(cargarEntregableOperacion(OPERACION, falla)).rejects.toThrow("entregable_503");
   });
 
   it("muestra junto al comentario cada cifra no verificada", () => {
