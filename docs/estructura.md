@@ -154,4 +154,4 @@ El Director consolida el entregable al final de toda cadena. Los demás agentes 
 
 ## Vista previa interactiva
 
-[`vista-previa/oficina-virtual.html`](vista-previa/oficina-virtual.html) es una página autónoma, sin dependencias, que simula una operación con **datos ficticios**: se puede elegir un encargo, ver los traspasos entre agentes, los estados y la traza. Solo ilustra el flujo; no ejecuta el sistema.
+[`vista-previa/oficina-virtual.html`](vista-previa/oficina-virtual.html) es una página autónoma, sin dependencias, con dos pestañas: **Esquema** (capas, árbol, recorrido y estados) y **Simulación**, que recorre una operación con **datos ficticios**: se puede elegir un encargo, ver los traspasos entre agentes, los estados y la traza. Solo ilustra el flujo; no ejecuta el sistema. Ábrala directamente en el navegador.
