@@ -7,7 +7,7 @@ La autenticación usa Supabase Auth desde el servidor. El proxy de Next.js renue
 El orden es:
 
 1. `getUser()` valida la sesión y obtiene el identificador y correo.
-2. El correo normalizado debe pertenecer a `CORREOS_PERMITIDOS`; para el uso personal puede configurarse, por ejemplo, `jorgejamil31@gmail.com`.
+2. El correo normalizado debe pertenecer a `CORREOS_PERMITIDOS`; para el uso personal puede configurarse, por ejemplo, `usuario@ejemplo.ec`.
 3. Si MFA es obligatorio o existe un factor verificado, `getAuthenticatorAssuranceLevel()` debe devolver `aal2`.
 4. La base busca una membresía del usuario. `orgId` y rol salen exclusivamente de esa membresía.
 5. Las APIs responden `401` o `403`; las páginas redirigen a login, desafío MFA, inscripción o “sin acceso”, según corresponda.

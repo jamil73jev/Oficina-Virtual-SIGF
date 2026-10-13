@@ -11,6 +11,12 @@ La integración usa el proveedor `createGateway` incluido en AI SDK 7. No hay un
 
 Para elegir un modelo de la capa gratuita, consulte el catálogo actual de AI Gateway en Vercel y filtre por precio o disponibilidad gratuita antes de definir `MODELO`. El catálogo y los límites cambian, por lo que el código no fija un modelo gratuito por defecto; cada modelo puede imponer cuotas y responder `429`. La integración reintenta errores transitorios hasta tres veces con espera creciente y limita la duración de cada intento.
 
+## Gemini directo con Google AI Studio
+
+`MODELO=google:<modelo>` usa el proveedor de Google de AI SDK sin pasar por AI Gateway, por ejemplo `google:gemini-2.5-flash-lite`. Requiere `GOOGLE_GENERATIVE_AI_API_KEY`, una clave de Google AI Studio que se trata como secreto. El nombre del modelo se valida con un formato estricto y `MODELO_RESPALDO=simulado` funciona igual que con el Gateway. Como cualquier modelo de nube, solo recibe datos sintéticos.
+
+En Vercel, `gateway:` acepta el token OIDC que la plataforma entrega por solicitud, por lo que no hace falta definir `AI_GATEWAY_API_KEY`.
+
 ## Regla de datos
 
 El Gateway solo puede recibir datos sintéticos. `MODO_DATOS=real` requiere ejecución local fuera de Vercel; en Vercel, una configuración real o una fuente que no declare tipo `sintetico` falla tanto al construir el servicio como al iniciar cada consulta. Las cifras y tablas continúan siendo calculadas por código y el modelo se limita a redactar comentarios o proponer planes sobre resúmenes compactos.

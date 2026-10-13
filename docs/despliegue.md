@@ -64,6 +64,7 @@ Solo `NEXT_PUBLIC_*` es público. “Obligatoria” se refiere al despliegue pro
 | `MODELO` | Fábrica del modelo | Secreta/configuración | `gateway:[PROVEEDOR/MODELO]` | Sí para comentarios con IA |
 | `MODELO_RESPALDO` | Respaldo explícito | Secreta/configuración | Omitir o `simulado` | No |
 | `AI_GATEWAY_API_KEY` | Credencial opcional Gateway | Secreta | Omitir si se usa OIDC de Vercel | No |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Modelo `google:` directo | Secreta | Clave de Google AI Studio | Solo con `MODELO=google:...` |
 | `VERCEL_OIDC_TOKEN` | OIDC de Gateway | Secreta | Gestionada automáticamente por Vercel | No manual |
 | `MODELO_LOCAL` | Ollama heredado | Secreta/configuración | Omitir en Vercel | No |
 | `OLLAMA_URL` | URL de Ollama | Secreta/configuración | Omitir en Vercel | No |
