@@ -1,3 +1,4 @@
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createGateway } from "ai";
 import { ModeloAiSdk } from "./ai-sdk";
 import { ModeloSimulado, type ModeloLenguaje, type PeticionObjeto, type PeticionTexto } from "./modelo";
@@ -101,6 +102,33 @@ export class ModeloNubeResiliente implements ModeloLenguaje {
   }
 }
 
+function conRespaldo(
+  base: ModeloLenguaje,
+  env: Record<string, string | undefined>,
+  opciones: OpcionesModeloNube,
+): ModeloNubeResiliente {
+  if (env.MODELO_RESPALDO !== undefined && env.MODELO_RESPALDO !== "simulado") {
+    throw new ModeloNubeConfiguracionError("MODELO_RESPALDO solo admite el valor simulado");
+  }
+  const respaldo = env.MODELO_RESPALDO === "simulado" ? new ModeloSimulado() : undefined;
+  return new ModeloNubeResiliente(base, { ...opciones, respaldo: opciones.respaldo ?? respaldo });
+}
+
+/** Gemini directo con una clave gratuita de Google AI Studio (sin pasar por AI Gateway). */
+export function crearModeloGoogle(
+  idModelo: string,
+  env: Record<string, string | undefined>,
+  opciones: OpcionesModeloNube = {},
+): ModeloNubeResiliente {
+  if (!/^[a-z0-9][a-z0-9._-]*$/i.test(idModelo)) {
+    throw new ModeloNubeConfiguracionError(`MODELO google invalido: ${idModelo}`);
+  }
+  const apiKey = env.GOOGLE_GENERATIVE_AI_API_KEY?.trim();
+  if (!apiKey) throw new ModeloNubeConfiguracionError("MODELO google requiere GOOGLE_GENERATIVE_AI_API_KEY");
+  const proveedor = createGoogleGenerativeAI({ apiKey });
+  return conRespaldo(new ModeloAiSdk(proveedor(idModelo), `google:${idModelo}`, "nube", 0), env, opciones);
+}
+
 export function crearModeloGateway(
   idModelo: string,
   env: Record<string, string | undefined>,
@@ -110,14 +138,11 @@ export function crearModeloGateway(
     throw new ModeloNubeConfiguracionError(`MODELO gateway invalido: ${idModelo}`);
   }
   const credencial = env.AI_GATEWAY_API_KEY?.trim() || env.VERCEL_OIDC_TOKEN?.trim();
-  if (!credencial) {
+  // En Vercel el token OIDC se entrega por solicitud (no como variable de entorno) y el proveedor
+  // lo resuelve solo: basta con no pasar apiKey.
+  if (!credencial && !env.VERCEL) {
     throw new ModeloNubeConfiguracionError("AI Gateway requiere AI_GATEWAY_API_KEY o VERCEL_OIDC_TOKEN");
   }
-  const proveedor = createGateway({ apiKey: credencial });
-  const base = new ModeloAiSdk(proveedor(idModelo), `gateway:${idModelo}`, "nube", 0);
-  if (env.MODELO_RESPALDO !== undefined && env.MODELO_RESPALDO !== "simulado") {
-    throw new ModeloNubeConfiguracionError("MODELO_RESPALDO solo admite el valor simulado");
-  }
-  const respaldo = env.MODELO_RESPALDO === "simulado" ? new ModeloSimulado() : undefined;
-  return new ModeloNubeResiliente(base, { ...opciones, respaldo: opciones.respaldo ?? respaldo });
+  const proveedor = createGateway(credencial ? { apiKey: credencial } : {});
+  return conRespaldo(new ModeloAiSdk(proveedor(idModelo), `gateway:${idModelo}`, "nube", 0), env, opciones);
 }

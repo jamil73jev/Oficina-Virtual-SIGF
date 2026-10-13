@@ -23,6 +23,18 @@ describe("modelo de nube", () => {
       .toMatchObject({ id: "gateway:google/gemini-2.5-flash-lite", alojamiento: "nube" });
   });
 
+  it("valida el modelo google: formato y clave obligatoria", () => {
+    expect(() => crearModeloDesdeEntorno({ MODELO: "google:gemini-2.5-flash-lite" })).toThrow(/GOOGLE_GENERATIVE_AI_API_KEY/);
+    expect(() => crearModeloDesdeEntorno({ MODELO: "google:mal/formato", GOOGLE_GENERATIVE_AI_API_KEY: "x" })).toThrow(/invalido/);
+    expect(crearModeloDesdeEntorno({ MODELO: "google:gemini-2.5-flash-lite", GOOGLE_GENERATIVE_AI_API_KEY: "secreto" }))
+      .toMatchObject({ id: "google:gemini-2.5-flash-lite", alojamiento: "nube" });
+  });
+
+  it("en Vercel acepta el token OIDC automatico sin variable de credencial", () => {
+    expect(crearModeloDesdeEntorno({ MODELO: "gateway:google/gemini-2.5-flash-lite", VERCEL: "1" }))
+      .toMatchObject({ id: "gateway:google/gemini-2.5-flash-lite", alojamiento: "nube" });
+  });
+
   it("reintenta 429 y lanza error tipado al agotar tres intentos", async () => {
     const base = modeloQueFalla();
     const esperar = vi.fn(async () => undefined);

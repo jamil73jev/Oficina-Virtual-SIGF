@@ -43,7 +43,11 @@ export function crearManejadorMantenimiento({
       await base.execute(sql`select 1`);
       const eventosPurgados = await purgar(base);
       return json({ ok: true, eventosPurgados }, 200);
-    } catch {
+    } catch (error) {
+      // Solo codigos (nunca el mensaje, que podria incluir datos de conexion) para poder diagnosticar.
+      const causa = (error as { cause?: { code?: unknown; name?: unknown } }).cause;
+      const codigo = causa?.code ?? (error as { code?: unknown }).code ?? "sin_codigo";
+      console.error("mantenimiento_fallido", { codigo: String(codigo), tipo: String(causa?.name ?? (error as Error).name) });
       return json({ error: "mantenimiento_fallido" }, 503);
     }
   };

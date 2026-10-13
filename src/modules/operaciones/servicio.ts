@@ -808,6 +808,7 @@ export class ServicioOperaciones {
       detalle: {
         clave: paso.clave,
         comentario: resultado.comentario,
+        falloModelo: resultado.falloModelo,
         ...(resultado.estado === "sin_datos" ? { mensaje: resultado.mensaje } : {}),
         verificacion: {
           total: resultado.verificacionCifras.total,

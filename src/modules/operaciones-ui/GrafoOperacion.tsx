@@ -13,10 +13,14 @@ const GRUPOS: Array<{ id: "direccion" | "gestion" | "rentas" | "control"; agente
   { id: "control", agentes: ["control-estadistica", "datos"] },
 ];
 
-const ICONOS: Record<EstadoAgenteOperacion, string> = { inactivo: "○", trabajando: "◉", completado: "✓", sin_datos: "∅", error: "!" };
+const ICONOS: Record<EstadoAgenteOperacion, string> = {
+  inactivo: "○", trabajando: "◉", esperando: "⏸", completado: "✓", degradado: "▲", sin_datos: "∅", error: "!",
+};
 const CLASES: Record<EstadoAgenteOperacion, string> = {
   inactivo: "fill-surface stroke-border text-muted", trabajando: "fill-info-soft stroke-info text-info",
-  completado: "fill-success-soft stroke-success text-success", sin_datos: "fill-warning-soft stroke-warning text-warning",
+  esperando: "fill-surface stroke-info text-info",
+  completado: "fill-success-soft stroke-success text-success", degradado: "fill-warning-soft stroke-warning text-warning",
+  sin_datos: "fill-warning-soft stroke-warning text-warning",
   error: "fill-danger-soft stroke-danger text-danger",
 };
 

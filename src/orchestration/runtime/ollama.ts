@@ -8,7 +8,7 @@ import type {
   PeticionTexto,
   UsoModelo,
 } from "./modelo";
-import { crearModeloGateway, type OpcionesModeloNube } from "./modelo-nube";
+import { crearModeloGateway, crearModeloGoogle, type OpcionesModeloNube } from "./modelo-nube";
 
 export class OllamaNoLocalError extends Error {
   constructor(readonly url: string) {
@@ -221,6 +221,8 @@ export function crearModeloDesdeEntorno(
   if (configurado === undefined || configurado.trim() === "") return null;
   const gateway = /^gateway:(.*)$/.exec(configurado.trim());
   if (gateway) return crearModeloGateway(gateway[1] ?? "", env, opciones.nube);
+  const google = /^google:(.*)$/.exec(configurado.trim());
+  if (google) return crearModeloGoogle(google[1] ?? "", env, opciones.nube);
   const coincidencia = /^ollama:(.+)$/.exec(configurado.trim());
   if (!coincidencia?.[1]?.trim()) throw new OllamaConfiguracionError(configurado);
   return new ModeloOllama(coincidencia[1].trim(), {

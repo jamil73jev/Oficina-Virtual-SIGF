@@ -1,6 +1,12 @@
 import type { EventoTraza, InstantaneaOperacion } from "@/orchestration/traza/eventos";
 
-export type EstadoAgenteOperacion = "inactivo" | "trabajando" | "completado" | "sin_datos" | "error";
+/**
+ * Estados operativos visibles de un agente.
+ * - esperando: pausado por presupuesto a la espera de una decision.
+ * - degradado: termino con sus tablas, pero el modelo no produjo comentario.
+ */
+export type EstadoAgenteOperacion =
+  | "inactivo" | "trabajando" | "esperando" | "completado" | "degradado" | "sin_datos" | "error";
 export const IDS_AGENTES_OPERACION = ["control-estadistica", "cartera", "datos", "tesorero", "presupuestista", "contador", "pagador", "cajero-mayor", "rentas", "coactiva", "director", "planificacion"] as const;
 export type IdAgenteOperacion = (typeof IDS_AGENTES_OPERACION)[number];
 
@@ -33,9 +39,12 @@ export function estadosAgentes(eventos: readonly EventoTraza[]): Record<IdAgente
   for (const evento of eventos) {
     if (!evento.agenteId || !(evento.agenteId in estados)) continue;
     const id = evento.agenteId as IdAgenteOperacion;
-    if (evento.tipo === "error" || evento.estado === "fallido") estados[id] = "error";
-    else if (evento.estado === "sin_datos") estados[id] = "sin_datos";
-    else if (evento.estado === "completado" || (evento.tipo === "entregable" && estados[id] !== "sin_datos" && estados[id] !== "error")) estados[id] = "completado";
+    if (evento.tipo === "error" || evento.estado === "fallido") {
+      estados[id] = evento.detalle?.codigo === "presupuesto_pausado" ? "esperando" : "error";
+    } else if (evento.estado === "sin_datos") estados[id] = "sin_datos";
+    else if (evento.estado === "completado" || (evento.tipo === "entregable" && estados[id] !== "sin_datos" && estados[id] !== "error")) {
+      estados[id] = evento.detalle?.falloModelo === true ? "degradado" : "completado";
+    }
     else if (evento.tipo === "agente_inicia" || evento.estado === "en_curso") estados[id] = "trabajando";
     if (evento.tipo === "traspaso" && estados[id] === "trabajando") estados[id] = "completado";
   }

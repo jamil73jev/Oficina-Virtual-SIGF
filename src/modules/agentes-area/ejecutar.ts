@@ -118,6 +118,8 @@ interface ResultadoConTablas {
   documentoRef: string | null;
   uso: Uso;
   duracionMs: { herramientas: number; comentario: number; total: number };
+  /** El modelo no produjo comentario (las herramientas y tablas siguen siendo validas). */
+  falloModelo: boolean;
   verificacionCifras: {
     total: number;
     verificadas: number;
@@ -337,6 +339,17 @@ export async function ejecutarAgenteArea(
     }
     if (salidasHerramientas.length > 0) {
       falloModelo = true;
+      // Solo clasificacion del error (nunca el mensaje: podria incluir datos del prompt).
+      const causa = (e as { causa?: unknown }).causa ?? e;
+      const info = causa as { name?: unknown; statusCode?: unknown; status?: unknown; code?: unknown; message?: unknown };
+      // El mensaje del proveedor (p. ej. "API key not valid") ayuda a diagnosticar y se acota; en la
+      // nube solo circulan datos sinteticos.
+      console.error("modelo_sin_comentario", {
+        agente: agente.id,
+        mensaje: deps.modelo.alojamiento === "nube" ? String(info.message ?? "").slice(0, 200) : undefined,
+        tipo: String(info.name ?? "desconocido"),
+        estado: String(info.statusCode ?? info.status ?? info.code ?? "sin_codigo"),
+      });
       r = {
         resumen: "Las herramientas se ejecutaron, pero el modelo no produjo un comentario.",
         documentoRef: null,
@@ -423,6 +436,7 @@ ${respuesta}`,
       documentoRef: r.documentoRef,
       uso: r.uso,
       duracionMs: { herramientas: duracionHerramientasMs, comentario: duracionComentarioMs, total: Date.now() - inicioTotal },
+      falloModelo,
       verificacionCifras,
     };
   }
@@ -445,6 +459,7 @@ ${respuesta}`,
     documentoRef: r.documentoRef,
     uso: r.uso,
     duracionMs: { herramientas: duracionHerramientasMs, comentario: duracionComentarioMs, total: Date.now() - inicioTotal },
+    falloModelo,
     verificacionCifras,
   };
 }
