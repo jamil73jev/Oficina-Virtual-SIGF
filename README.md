@@ -121,7 +121,7 @@ messages/                textos es/en
 
 ## Aviso de uso
 
-Repositorio privado, sin licencia de código abierto. Ver [`AVISO.md`](AVISO.md). Para contribuir, [`CONTRIBUTING.md`](CONTRIBUTING.md); qué no subir, [`SEGURIDAD.md`](SEGURIDAD.md).
+Repositorio público, sin licencia de código abierto. Ver [`AVISO.md`](AVISO.md). Para contribuir, [`CONTRIBUTING.md`](CONTRIBUTING.md); qué no subir, [`SEGURIDAD.md`](SEGURIDAD.md).
 
 ## Historial de cambios
 

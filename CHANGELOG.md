@@ -4,6 +4,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+### Cambiado
+- `README.md`: el repositorio se describe como público, sin licencia de código abierto.
+
 ## [0.1.0] - 2026-10-13
 
 Primera versión publicada del repositorio: agentes de área, modelo local, sala de operaciones, persistencia en Postgres con login y MFA, y despliegue en Vercel con Supabase.
