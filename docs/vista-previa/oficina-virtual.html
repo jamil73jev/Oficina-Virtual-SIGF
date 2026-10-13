@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Oficina Virtual SIGF</title>
+<meta name="description" content="Simulación con datos ficticios de una operación en la Sala de operaciones.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --panel:#fbfaf6; --fg:#1d2733; --muted:#5d6b78; --line:#d9d3c5;
+  --accent:#1f5f7a; --accent-fg:#fff;
+  --dir:#1f3a5f; --fin:#2f6f5e; --ren:#8a5a1f; --dat:#5b4b8a;
+  --ok:#2f6f5e; --warn:#9a6a00; --bad:#a63d3d; --idle:#8b95a0;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12181f; --panel:#1a222b; --fg:#e6e9ec; --muted:#9aa7b3; --line:#2c3844;
+  --accent:#5fb3d3; --accent-fg:#0c141b;
+  --dir:#6f9bd6; --fin:#58b79e; --ren:#d9a05b; --dat:#a592e0;
+  --ok:#58b79e; --warn:#e0b34a; --bad:#e07878; --idle:#6f7b87; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12181f; --panel:#1a222b; --fg:#e6e9ec; --muted:#9aa7b3; --line:#2c3844;
+  --accent:#5fb3d3; --accent-fg:#0c141b;
+  --dir:#6f9bd6; --fin:#58b79e; --ren:#d9a05b; --dat:#a592e0;
+  --ok:#58b79e; --warn:#e0b34a; --bad:#e07878; --idle:#6f7b87; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.5;padding-inline:16px;padding-block:20px 40px}
+.wrap{max-width:1100px;margin:0 auto;display:grid;gap:18px}
+h1{font-size:1.5rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:.78rem;margin:0 0 10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
+.sub{color:var(--muted);margin:4px 0 0;max-width:70ch}
+.badge{display:inline-block;font:500 .72rem var(--mono);padding:2px 8px;border:1px solid var(--line);border-radius:99px;color:var(--muted);margin-top:8px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+select,button{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+select{flex:1 1 260px;min-width:0}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.plan{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:14px;font:500 .8rem var(--mono)}
+.plan span.step{padding:3px 9px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+.plan span.step.on{border-color:var(--accent);color:var(--fg);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.plan span.step.done{color:var(--ok);border-color:var(--ok)}
+.plan i{color:var(--muted);font-style:normal}
+.cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px}
+@media (max-width:820px){.cols{grid-template-columns:minmax(0,1fr)}}
+.groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:480px){.groups{grid-template-columns:minmax(0,1fr)}}
+.g h3{margin:0 0 6px;font-size:.78rem;font-weight:600;color:var(--gc)}
+.g ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.ag{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-left:4px solid var(--gc);border-radius:6px;font-size:.88rem;transition:background .2s}
+.ag small{font:500 .7rem var(--mono);color:var(--idle);white-space:nowrap}
+.ag[data-s="trabajando"]{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.ag[data-s="trabajando"] small{color:var(--accent)}
+.ag[data-s="completado"] small{color:var(--ok)}
+.ag[data-s="degradado"] small,.ag[data-s="esperando"] small{color:var(--warn)}
+.ag[data-s="error"] small,.ag[data-s="sin_datos"] small{color:var(--bad)}
+.ag[data-s="inactivo"]{opacity:.62}
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-height:430px;overflow:auto}
+.tl li{display:grid;grid-template-columns:34px 1fr;gap:8px;font-size:.86rem}
+.tl .n{font:500 .72rem var(--mono);color:var(--muted);padding-top:2px;text-align:right}
+.tl .t{font:500 .68rem var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.tl .t.w{color:var(--warn)}.tl .t.b{color:var(--bad)}.tl .t.o{color:var(--ok)}
+.empty{color:var(--muted);font-size:.9rem;margin:0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.05em}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.meta{font:400 .74rem var(--mono);color:var(--muted);margin:8px 0 0}
+.note{border-left:3px solid var(--warn);padding:6px 12px;font-size:.86rem;margin:10px 0 0;background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;font-size:.86rem;color:var(--muted)}
+.rules b{display:block;color:var(--fg);margin-bottom:2px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Oficina Virtual del SIGF</h1>
+    <p class="sub">Así viaja una operación por la Sala de operaciones: un plan, agentes que se traspasan el trabajo, herramientas que calculan, y una traza que registra cada paso.</p>
+    <span class="badge">SIMULACIÓN · datos ficticios · no ejecuta el sistema</span>
+  </header>
+
+  <section class="panel" aria-labelledby="h-enc">
+    <h2 id="h-enc">Encargo</h2>
+    <div class="bar">
+      <label for="op" class="sr" style="position:absolute;left:-9999px">Elegir encargo</label>
+      <select id="op"></select>
+      <button class="primary" id="play">Reproducir</button>
+      <button id="step">Siguiente evento</button>
+      <button id="reset">Reiniciar</button>
+    </div>
+    <div class="plan" id="plan" aria-label="Plan de la operación"></div>
+  </section>
+
+  <div class="cols">
+    <section class="panel" aria-labelledby="h-eq">
+      <h2 id="h-eq">Equipo de 12 agentes</h2>
+      <div class="groups" id="groups"></div>
+    </section>
+    <section class="panel" aria-labelledby="h-tr">
+      <h2 id="h-tr">Traza de la operación</h2>
+      <ol class="tl" id="tl" aria-live="polite"></ol>
+      <p class="empty" id="empty">Pulse «Reproducir» o «Siguiente evento».</p>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-tab">
+    <h2 id="h-tab">Cifras calculadas por herramientas</h2>
+    <div id="tablas"><p class="empty">Aún no hay tablas.</p></div>
+  </section>
+
+  <section class="panel">
+    <h2>Reglas que muestra esta simulación</h2>
+    <div class="rules">
+      <div><b>El modelo no calcula</b>Toda cifra sale de una herramienta, con fuente, fórmula y fecha de corte.</div>
+      <div><b>Estados honestos</b>«Degradado», «esperando» y «sin datos» se muestran tal cual; no se disimulan.</div>
+      <div><b>Aprobación humana</b>Lo irreversible queda pendiente hasta que una persona decida.</div>
+      <div><b>El Director cierra</b>Consolida el entregable al final de toda cadena.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+const GRUPOS=[
+ {n:"Dirección",c:"--dir",a:[["director","Director"],["planificacion","Planificación"]]},
+ {n:"Gestión financiera",c:"--fin",a:[["contador","Contador"],["presupuestista","Presupuestista"],["tesorero","Tesorero"],["pagador","Pagador"],["cajero-mayor","Cajero mayor"]]},
+ {n:"Rentas",c:"--ren",a:[["rentas","Rentas"],["coactiva","Coactiva"],["cartera","Cartera"]]},
+ {n:"Control y datos",c:"--dat",a:[["control-estadistica","Control y Estadística"],["datos","Datos"]]}
+];
+const NOMBRE={};GRUPOS.forEach(g=>g.a.forEach(([id,n])=>NOMBRE[id]=n));
+const ETQ={inactivo:"inactivo",trabajando:"trabajando",completado:"completado",degradado:"degradado",esperando:"esperando",sin_datos:"sin datos",error:"error"};
+
+const OPS=[
+{t:"Estado de la cartera vencida al corte",corte:"2026-09-30",pasos:[
+ {ag:"rentas",tool:"estado_vigente_al_corte",tab:{c:["Rubro","Títulos","Emisión (USD)"],f:[["Predial urbano","12.480","1.842.300"],["Patente municipal","6.915","934.120"],["Contribución especial de mejora","3.204","1.120.540"]],num:[1,2],fuente:"emisión sintética · corte 30/09/2026"},com:"La emisión vigente se concentra en predial urbano. Las resoluciones del período ya están aplicadas.",qa:"3 de 3 cifras verificadas"},
+ {ag:"cartera",tool:"saldo_cartera_por_titulo",tab:{c:["Antigüedad","Títulos","Saldo (USD)"],f:[["0 a 90 días","4.120","612.800"],["91 a 365 días","3.388","701.450"],["Más de 365 días","2.907","988.215"]],num:[1,2],fuente:"suma por título, nunca por juicio · corte 30/09/2026"},com:"El 46,6 % del saldo supera un año de antigüedad.",qa:"3 de 3 cifras verificadas"},
+ {ag:"coactiva",tool:"resumen_coactiva",tab:{c:["Estado del juicio","Juicios","Títulos distintos"],f:[["En trámite","1.904","1.611"],["Con pago parcial","622","590"],["Archivados","310","301"]],num:[1,2],fuente:"un título puede tener varios juicios; se conserva el historial"},com:"Hay 293 juicios en trámite sobre títulos que ya tienen otro juicio.",qa:"3 de 3 cifras verificadas"},
+ {ag:"director",tool:"tablero_ejecutivo",tab:{c:["Indicador","Valor"],f:[["Saldo de cartera vencida (USD)","2.302.465"],["Títulos con juicio activo","1.611"],["Corte homogéneo","30/09/2026"]],num:[1],fuente:"consolidación de rentas, cartera y coactiva"},com:"Entregable consolidado con tres tablas y sus fuentes. Sin acciones irreversibles pendientes.",qa:"3 de 3 cifras verificadas"}
+]},
+{t:"Conciliación bancaria y pagos de la semana",corte:"2026-10-09",pasos:[
+ {ag:"tesorero",tool:"conciliar_banco",tab:{c:["Concepto","Monto (USD)"],f:[["Saldo según libros","1.204.500"],["Saldo según banco","1.198.730"],["Partidas en tránsito","5.770"],["Diferencia sin explicar","0"]],num:[1],fuente:"extracto sintético · corte 09/10/2026"},com:"La diferencia se explica por tres partidas en tránsito.",qa:"4 de 4 cifras verificadas"},
+ {ag:"contador",tool:"conciliacion_contable",tab:{c:["Cuenta","Libros","Auxiliar","Diferencia"],f:[["Bancos","1.204.500","1.204.500","0"],["Cuentas por pagar","388.210","388.210","0"]],num:[1,2,3],fuente:"balance de comprobación sintético"},com:"Sin diferencias entre mayor y auxiliares.",qa:"6 de 6 cifras verificadas"},
+ {ag:"pagador",tool:"programar_pagos",aprob:true,tab:{c:["Orden","Proveedor","Monto (USD)","Estado"],f:[["OP-0412","Proveedor A (ficticio)","18.400","Pendiente de aprobación"],["OP-0413","Proveedor B (ficticio)","7.950","Pendiente de aprobación"]],num:[2],fuente:"validación de cuenta, partida y duplicados"},com:"Dos órdenes validadas. Programar el pago es irreversible: queda en espera de una persona.",qa:"2 de 2 cifras verificadas"},
+ {ag:"director",tool:"alertas_desviacion",tab:{c:["Alerta","Detalle"],f:[["Aprobación pendiente","2 órdenes de pago"],["Liquidez","Dentro del tope"]],num:[],fuente:"consolidación de tesorería, contabilidad y pagaduría"},com:"Entregable listo. Falta la decisión humana sobre las órdenes de pago.",qa:"2 de 2 cifras verificadas"}
+]},
+{t:"Recaudación neta del mes (con fallas simuladas)",corte:"2026-10-09",pasos:[
+ {ag:"cajero-mayor",tool:"arqueo_caja",tab:{c:["Caja","Cobrado (USD)","Sobrante / faltante"],f:[["C1","24.310","0"],["C2","19.870","-12"],["C3","31.040","0"]],num:[1,2],fuente:"arqueos sintéticos · turnos cerrados"},com:"Una caja con faltante menor; ningún turno sin cierre.",qa:"6 de 6 cifras verificadas"},
+ {ag:"tesorero",tool:"recaudacion_neta",esperando:true,tab:null,com:"",qa:""},
+ {ag:"control-estadistica",tool:"recaudacion_neta",degradado:true,tab:{c:["Medida","USD"],f:[["Pago bruto","1.532.400"],["Reversos no extemporáneos","-48.900"],["Recaudación neta","1.483.500"],["Reversos extemporáneos (aparte)","-6.200"]],num:[1],fuente:"neta = bruto menos reversos no extemporáneos"},com:"",qa:"4 de 4 cifras verificadas"},
+ {ag:"director",tool:"avance_vs_meta",tab:{c:["Indicador","Valor"],f:[["Recaudación neta","1.483.500"],["Meta del mes","1.600.000"],["Avance","92,7 %"]],num:[1],fuente:"corte homogéneo 09/10/2026"},com:"Avance de 92,7 % frente a la meta. El Tesorero quedó pausado por presupuesto y su aporte no está incluido.",qa:"3 de 3 cifras verificadas"}
+]}
+];
+
+const $=s=>document.querySelector(s);
+const sel=$("#op"),play=$("#play"),stepB=$("#step"),resetB=$("#reset");
+let op=0,evs=[],pos=0,timer=null;
+
+OPS.forEach((o,i)=>sel.add(new Option(o.t,i)));
+$("#groups").innerHTML=GRUPOS.map(g=>`<div class="g" style="--gc:var(${g.c})"><h3>${g.n}</h3><ul>${g.a.map(([id,n])=>`<li class="ag" data-id="${id}" data-s="inactivo"><span>${n}</span><small>inactivo</small></li>`).join("")}</ul></div>`).join("");
+
+function construir(i){
+  const o=OPS[i],out=[];
+  out.push({tipo:"operacion_creada",txt:`Operación creada: «${o.t}». Corte ${o.corte}.`});
+  out.push({tipo:"plan_creado",txt:`Plan de ${o.pasos.length} pasos: ${o.pasos.map(p=>NOMBRE[p.ag]).join(" → ")}.`});
+  o.pasos.forEach((p,k)=>{
+    out.push({tipo:"agente_inicia",ag:p.ag,txt:`${NOMBRE[p.ag]} recibe el encargo.`,paso:k});
+    if(p.esperando){
+      out.push({tipo:"error",ag:p.ag,txt:`${NOMBRE[p.ag]} pausado: el guard de presupuesto llegó al 100 %. Se pide ampliación.`,estado:"esperando",paso:k});
+      return;
+    }
+    out.push({tipo:"herramienta",ag:p.ag,txt:`Ejecuta ${p.tool}.`,paso:k});
+    if(p.tab)out.push({tipo:"tabla",ag:p.ag,tab:p.tab,txt:`Tabla generada (${p.tab.f.length} filas).`,paso:k});
+    if(p.com)out.push({tipo:"comentario",ag:p.ag,txt:p.com,paso:k});
+    if(p.degradado)out.push({tipo:"comentario",ag:p.ag,txt:"El modelo no produjo comentario. Se conservan las tablas.",paso:k,aviso:true});
+    if(p.qa)out.push({tipo:"qa",ag:p.ag,txt:`Verificación de cifras: ${p.qa}.`,paso:k});
+    if(p.aprob)out.push({tipo:"aprobacion_pendiente",ag:p.ag,txt:"Acción de riesgo alto: queda pendiente de aprobación humana.",paso:k});
+    out.push({tipo:"entregable",ag:p.ag,txt:`${NOMBRE[p.ag]} entrega su resultado.`,estado:p.degradado?"degradado":"completado",paso:k});
+    const sig=o.pasos[k+1];
+    if(sig)out.push({tipo:"traspaso",ag:p.ag,hacia:sig.ag,txt:`Traspaso: ${NOMBRE[p.ag]} → ${NOMBRE[sig.ag]}.`,paso:k});
+  });
+  out.push({tipo:"operacion_finalizada",txt:"Operación finalizada. Traza y auditoría quedan registradas."});
+  return out;
+}
+
+const CLS={error:"b",aprobacion_pendiente:"w",qa:"o",entregable:"o",operacion_finalizada:"o"};
+function pintar(){
+  const o=OPS[op],estados={};
+  const tablas=[];
+  const items=evs.slice(0,pos);
+  items.forEach(e=>{
+    if(e.ag){
+      if(e.tipo==="agente_inicia")estados[e.ag]="trabajando";
+      if(e.estado)estados[e.ag]=e.estado;
+    }
+    if(e.tab)tablas.push(e);
+  });
+  document.querySelectorAll(".ag").forEach(li=>{
+    const s=estados[li.dataset.id]||"inactivo";
+    li.dataset.s=s;li.querySelector("small").textContent=ETQ[s];
+  });
+  const actual=items.length?items[items.length-1].paso:undefined;
+  $("#plan").innerHTML=o.pasos.map((p,k)=>{
+    const hecho=items.some(e=>e.tipo==="entregable"&&e.paso===k||e.estado==="esperando"&&e.paso===k);
+    const cls=hecho?"done":(actual===k?"on":"");
+    return `<span class="step ${cls}">${k+1}. ${NOMBRE[p.ag]}</span>`+(k<o.pasos.length-1?"<i>→</i>":"");
+  }).join("");
+  $("#empty").hidden=items.length>0;
+  $("#tl").innerHTML=items.map((e,i)=>`<li><span class="n">${i+1}</span><div><div class="t ${e.aviso?"w":(CLS[e.tipo]||"")}">${e.tipo.replaceAll("_"," ")}</div>${esc(e.txt)}</div></li>`).join("");
+  const tl=$("#tl");tl.scrollTop=tl.scrollHeight;
+  $("#tablas").innerHTML=tablas.length?tablas.map(e=>{
+    const t=e.tab,num=new Set(t.num);
+    return `<div style="margin-bottom:16px"><div class="scroll"><table><caption class="meta" style="text-align:left;caption-side:top;margin:0 0 4px">${NOMBRE[e.ag]}</caption><thead><tr>${t.c.map((h,j)=>`<th class="${num.has(j)?"num":""}">${esc(h)}</th>`).join("")}</tr></thead><tbody>${t.f.map(r=>`<tr>${r.map((v,j)=>`<td class="${num.has(j)?"num":""}">${esc(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div><p class="meta">Fuente: ${esc(t.fuente)}</p></div>`;
+  }).join(""):`<p class="empty">Aún no hay tablas.</p>`;
+  if(items.some(e=>e.estado==="esperando")||items.some(e=>e.aviso)){
+    $("#tablas").insertAdjacentHTML("beforeend",`<p class="note">Estados honestos: un agente «esperando» no aporta cifras, y uno «degradado» entrega tablas sin comentario del modelo. El entregable lo declara.</p>`);
+  }
+  const fin=pos>=evs.length;
+  stepB.disabled=fin;
+  play.textContent=timer?"Pausar":(fin?"Repetir":"Reproducir");
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function parar(){if(timer){clearInterval(timer);timer=null}}
+function avanzar(){if(pos<evs.length)pos++;if(pos>=evs.length)parar();pintar()}
+function cargar(i){parar();op=i;evs=construir(i);pos=0;pintar()}
+sel.onchange=()=>cargar(+sel.value);
+resetB.onclick=()=>cargar(op);
+stepB.onclick=()=>{parar();avanzar()};
+play.onclick=()=>{
+  if(timer){parar();pintar();return}
+  if(pos>=evs.length)pos=0;
+  timer=setInterval(avanzar,900);pintar();
+};
+cargar(0);
+</script>
+
+</html>

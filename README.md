@@ -107,12 +107,18 @@ messages/                textos es/en
 | Documento | Contenido |
 |---|---|
 | [`docs/arquitectura.md`](docs/arquitectura.md) | Esquema de datos, runtime de agentes, flujo y etapas |
+| [`docs/estructura.md`](docs/estructura.md) | Diagramas por capas, árbol del repositorio, recorrido de una operación y estados |
+| [`docs/vista-previa/oficina-virtual.html`](docs/vista-previa/oficina-virtual.html) | Simulación interactiva con datos ficticios (abrir en el navegador) |
 | [`docs/agentes-area.md`](docs/agentes-area.md) | Los 12 agentes, herramientas y reglas de negocio |
 | [`docs/autenticacion.md`](docs/autenticacion.md) | Sesión, MFA, roles y modelo de amenazas |
 | [`docs/persistencia.md`](docs/persistencia.md) | PostgreSQL, roles, RLS, migraciones y retención |
 | [`docs/modelo-nube.md`](docs/modelo-nube.md) | AI Gateway y Gemini directo |
 | [`docs/modelo-local.md`](docs/modelo-local.md) | Ollama |
 | [`docs/despliegue.md`](docs/despliegue.md) | Supabase y Vercel paso a paso, con el inventario de variables |
+
+## Aviso de uso
+
+Repositorio privado, sin licencia de código abierto. Ver [`AVISO.md`](AVISO.md).
 
 ## Historial de cambios
 

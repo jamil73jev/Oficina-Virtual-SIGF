@@ -9,6 +9,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - Indicador `falloModelo` en comentarios y entregables, con registro del tipo de error sin exponer datos.
 - Modelo `google:<modelo>` con Gemini directo desde Google AI Studio.
 - Token OIDC automático de Vercel para el AI Gateway.
+- `AVISO.md` de uso y propiedad intelectual.
+- `docs/estructura.md` con diagramas por capas, árbol, secuencia y estados, y una vista previa interactiva con datos ficticios.
 - `.env.example`, `.gitattributes` y README con inicio rápido, seguridad y mapa de documentación.
 
 ### Corregido
