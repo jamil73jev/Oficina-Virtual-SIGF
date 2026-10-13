@@ -107,7 +107,7 @@ sequenceDiagram
         A->>T: herramienta, tabla, comentario, traspaso
     end
     S->>T: entregable, operacion_finalizada
-    T-->>P: Línea de tiempo en vivo (SSE)
+    T-->>P: Línea de tiempo en vivo (SSE, con sondeo de respaldo)
     P->>S: Aprueba o rechaza acciones de riesgo
 ```
 

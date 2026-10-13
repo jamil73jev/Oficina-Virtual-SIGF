@@ -104,8 +104,11 @@ messages/                textos es/en
 
 ## Documentación
 
+Índice completo y ruta de lectura en [`docs/README.md`](docs/README.md).
+
 | Documento | Contenido |
 |---|---|
+| [`docs/decisiones/`](docs/decisiones/README.md) | Decisiones de arquitectura y sus razones |
 | [`docs/arquitectura.md`](docs/arquitectura.md) | Esquema de datos, runtime de agentes, flujo y etapas |
 | [`docs/estructura.md`](docs/estructura.md) | Diagramas por capas, árbol del repositorio, recorrido de una operación y estados |
 | [`docs/vista-previa/oficina-virtual.html`](docs/vista-previa/oficina-virtual.html) | Simulación interactiva con datos ficticios (abrir en el navegador) |
@@ -118,7 +121,7 @@ messages/                textos es/en
 
 ## Aviso de uso
 
-Repositorio privado, sin licencia de código abierto. Ver [`AVISO.md`](AVISO.md).
+Repositorio privado, sin licencia de código abierto. Ver [`AVISO.md`](AVISO.md). Para contribuir, [`CONTRIBUTING.md`](CONTRIBUTING.md); qué no subir, [`SEGURIDAD.md`](SEGURIDAD.md).
 
 ## Historial de cambios
 
